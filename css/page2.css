@@ -1,0 +1,201 @@
+@font-face {
+    font-family: 'open_sanscondensed_light';
+    src: url('opensans-condlight-webfont.woff2') format('woff2'),
+         url('opensans-condlight-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+/* https://maps.googleapis.com/maps/api/geocode/json?latlng=52.091023,8.350020&key=AIzaSyAXHgKWGY3dXRKUqVL9_cAFPRhidM-nTNM */
+body, html {
+  width: 100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+    background:#F5F5F5;
+    font-family: 'open_sanscondensed_light', sans-serif;
+}
+
+.menu {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  height: 70px;
+  width: 100%;
+  background: white;
+    z-index: 97;
+    line-height: 70px;  
+}
+
+nav#menu-ui {
+  position: absolute;
+  bottom: 15px;
+  height: 30px;
+  margin-left: 10px;
+  background-color: white;
+  /*padding-top: 4px;
+  padding-bottom: 4px; */
+  border-style: solid;
+  border-width: 1px;
+  border-color: black;
+  z-index: 4;
+}
+
+.leaflet-bar a+a, .leaflet-bar a+a:hover {
+  border-top: 1px solid black !important;
+}
+/*.leaflet-bar, .leaflet-control-layers {
+  border: 1px solid black !important;
+} */
+
+nav#menu-ui a {
+  color: grey;
+  text-decoration: none;
+  text-align: center;
+  line-height: 30px;
+  margin: 0px;
+  padding-top: 5px;
+  padding-bottom: 7px;
+  padding-left: 8px;
+  padding-right: 6px;
+  letter-spacing: 0.2em;
+  font-size: 14px;
+}
+
+.leaflet-touch .leaflet-bar, .leaflet-touch .leaflet-control-layers {
+  border: 1px solid black !important;
+}
+
+.leaflet-bar, .leaflet-control-layers {
+  border-radius: 0px !important;
+}
+
+#menu-ui a:active {
+  background-color: #F5F5F5;
+}
+
+.active {
+  color: black !important;
+}
+
+#menu-ui a+a {
+  border-left: solid 1px black;
+}
+
+.leaflet-control-zoom.leaflet-bar.leaflet-control {
+  margin-bottom: 50px;
+}
+
+.menu p {
+  color: black;
+  font-family: 'open_sanscondensed_light', Helvetica, Arial, sans-serif;
+    letter-spacing: 0.3em;
+    font-size: 36px;
+    padding-left: 30px;
+    margin: 0px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+#fileMap, #fileFeld {
+  position: relative;
+  top: 90px;
+  z-index: 2;
+}
+
+.weiter-oben {
+  display: block;
+  position: absolute;
+  top: 15px;
+  right: 40px;
+  width: 130px;
+  height: 40px;
+  z-index: 99;
+  border-style: solid;
+    border-width: 2px;
+    border-color: black;
+    background: white;
+    font-family: 'open_sanscondensed_light', Helvetica, Arial, sans-serif;
+    letter-spacing: 0.1em;
+    font-size: 18px;
+    color: black;
+    padding: 5px;
+    border-radius: 0 !important;
+}
+
+.weiter-oben:active {
+    vertical-align: top;
+    padding-top: 6px;
+    background: rgba(0,0,0,0.02);
+}
+
+#Leiste {
+  position: fixed;
+  padding-top: 20px;
+  overflow-y: scroll;
+  top: 70px;
+  right: 0px;
+  width: 350px;
+  cursor: default;
+  height: calc(100vh - 70px);
+  background: #ececec;
+  z-index: 94;
+}
+
+#Leiste p {
+  font-size: 16px;
+  letter-spacing: 0.1em;
+  padding-left: 45px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  margin: 0px;
+}
+
+.geclickt {
+  background-color: #E0E0E0;
+}
+
+#Leiste h2 {
+  font-size: 18px;
+  letter-spacing: 0.2em;
+  margin-bottom: 5px;
+  margin-top: 5px; 
+  margin-left: 30px;
+  font-weight: normal;
+}
+
+#Leiste h1 {
+  font-size: 18px;
+  letter-spacing: 0.2em;
+  margin-left: 30px;
+  margin-bottom: 40px;
+  font-weight: normal;
+}
+
+#mapid { 
+    position: absolute;
+    top: 70px;
+    height: calc(100vh - 70px);
+    width: calc(100vw - 350px); 
+    z-index: 1;
+  }
+
+#Leiste div {
+  padding: 0;
+}
+
+.expand{
+    height: 0;
+    overflow: hidden;
+    transition: height 0.8s ease;
+}
+
+p input {
+  font-family: 'open_sanscondensed_light', sans-serif;
+  font-size: 16px;
+  letter-spacing: 0.1em;
+} 

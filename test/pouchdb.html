@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>PouchDB</title>
+	<meta charset="utf-8"> 
+	<script src="../src/pouchdb-6.2.0.js"></script>
+	<script src="../src/pouchdb.authentication.min.js"></script>
+	<script src="../src/app.js"></script>
+	<script src="../src/grossMargin2.js"></script>
+	<link rel="stylesheet" href="../css/page1.css" />
+	<link rel="stylesheet" href="../css/page2.css" />
+	<link rel="stylesheet" href="../css/page3.css" />
+</head>
+<body>
+<!--
+		Header
+-->
+
+<div class="menu">
+	<p>FRUCHTFOLGE</p>
+</div>
+
+<!--
+		Login Seite
+-->
+
+<input id="weiter" class="weiter-oben" onclick="animation_start2()" type="button" value="WEITER"/>
+
+<div id='tabelle'></div>
+
+	<div id="LeisteCrops">
+	</div>
+
+	<nav id='menu-ui' class='menu-ui'></nav>
+
+
+<script type="text/javascript">
+var profile;
+
+login('batman', 'brucewayne')
+  .then(function (response) {
+  	console.log('login')
+	profile = new PouchDB('profile')
+	profile.sync('http://v-server-node.ilb.uni-bonn.de:5984/userdb-' + toHex(response.name), {
+		live: true,
+		retry: true
+	}).on('change', function (info) {
+	  // handle change
+	}).on('paused', function (err) {
+	  // replication paused (e.g. replication up to date, user went offline)
+	}).on('active', function () {
+	  // replicate resumed (e.g. new changes replicating, user went back online)
+	}).on('denied', function (err) {
+	  // a document failed to replicate (e.g. due to permissions)
+	}).on('complete', function (info) {
+	  // handle complete
+	}).on('error', function (err) {
+	  // handle error
+	});
+}).then(function () {
+	return createCroppingPage()
+}).then(function () {
+	console.log('finished')
+})
+
+/*
+	var db = new PouchDB('http://localhost:5984/users', {skip_setup: true});
+
+		db.login('batman', 'brucewayne', function (err, response) {
+		  if (err) {
+		    if (err.name === 'unauthorized') {
+		      console.log(err)
+		    } else {
+		      console.log(err)
+		    }
+		  }
+		  console.log(response)
+		})
+*/
+</script>
+</body>
+</html>

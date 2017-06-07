@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Crops Test</title>
+	<script src="//cdn.jsdelivr.net/pouchdb/6.2.0/pouchdb.min.js"></script>
+</head>
+<body>
+<script src='../src/grossMarginHelpers.js' type="text/javascript"></script>
+<script src='../src/grossMargin.js' type="text/javascript"></script>
+<script type="text/javascript">
+
+var profile = {};
+profile.email = 'test@test.de';
+profile.password = 'testtest';
+// Update DB
+// firebase.database().ref().update({['users/' + firebase.auth().currentUser.uid + '/profile/street']: 'Römerstr.'})
+
+firebase.auth().signInWithEmailAndPassword(profile.email, profile.password).catch(function(error) {
+  // Handle Errors here.
+  var errorCode = error.code;
+  var errorMessage = error.message;
+  console.log (errorCode + ", " + errorMessage)
+  // ...
+});
+
+</script>
+
+</body>
+</html>

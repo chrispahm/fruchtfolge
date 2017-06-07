@@ -60,7 +60,7 @@ function createCroppingPage () {
 			if (!crops) {
 				resolve(null)
 			}
-			var db = new PouchDB('http://v-server-node.ilb.uni-bonn.de:5984/recommendations')
+			var db = new PouchDB(couchPath + '/recommendations')
 			db.bulkGet({
 					docs: [
 						{id: 'cropObject'},
@@ -92,7 +92,7 @@ function createCroppingPage () {
 						console.log(crop);
 						var id = cropObject[KTBLname].name.replace(',','') + '/' + cropObject[KTBLname].tillage[0].replace(',','')
 									   + '/2/' + cropObject[KTBLname].yield[0].replace(',','') + '/120/2'
-						var db = new PouchDB('http://v-server-node.ilb.uni-bonn.de:5984/crops')
+						var db = new PouchDB(couchPath + 'crops')
 						db.get(id).then(function (result) {
 							var cropDB = {};
 							var specification = result.specification
@@ -154,7 +154,7 @@ function createCroppingPage () {
 					}
 					else {
 						return promiseArr.push(new Promise (function (resolve) {
-							var db = new PouchDB('http://v-server-node.ilb.uni-bonn.de:5984/sgm')
+							var db = new PouchDB(couchPath + '/sgm')
 							// ToDo - get price closest to farm
 							if (crop == 'Winterweizen') {
 								var id = "Weichweizen und Spelz/Deutschland/2016"
@@ -228,7 +228,12 @@ function createCroppingPage () {
 				    tableHead.appendChild(tr);
 				    for (i = 0; i < kopfzeile.length; i++) {
 				        var th = document.createElement('TH');
-				//        th.width = 'auto';
+				        if (i == 0) {
+				        	th.width = '50%'
+				        }
+				        else {
+				        	th.width = '22%';
+				        }
 				        th.appendChild(document.createTextNode(kopfzeile[i]));
 				        tr.appendChild(th);
 				    }
@@ -278,6 +283,7 @@ function createCroppingPage () {
 					direcCostArr.forEach(createRows)
 
 					// Variable machine costs
+					var sum = {}
 					function varMechCost() {
 						var trMech = document.createElement('TR');
 						var tdMech = document.createElement('TD')
@@ -357,7 +363,7 @@ function createCroppingPage () {
 						    tr.appendChild(th);
 						}
 						
-						var sum = {}
+						//var sum = {}
 						sum.time = 0
 						sum.fuelCons = 0
 						sum.deprec = 0
@@ -370,6 +376,7 @@ function createCroppingPage () {
 
 						doc[item].procedures.forEach(function (procedure, index) {
 							var trStep = document.createElement('TR');
+							trStep.classList.toggle(toHex(item) + index.toString())
 							//var tdStep = document.createElement('TD')
 							//tdStep.colSpan = '4'
 							function isEven(n) {
@@ -408,8 +415,9 @@ function createCroppingPage () {
 							// sums are stored in following var
 							
 							for (var i = 0; i < procedure.steps.length; i++) {
-								var step = procedure.steps[i]
-								var tr = document.createElement('TR')
+								var step = procedure.steps[i];
+								var tr = document.createElement('TR');
+								tr.classList.toggle(toHex(item) + index.toString());
 
 								var keys = ['description', 'time', 'fuelCons', 'deprec', 'interest', 'others', 'maintenance', 'lubricants', 'services']
 
@@ -463,6 +471,7 @@ function createCroppingPage () {
 						})
 						tableMechBody.appendChild(trSum)
 
+						// show/hide variable machine cost row on click
 						createRows(['Variable Maschinenkosten', '', '', sum.total.toFixed(2)], function (e) {
 							    e.__toggle = !e.__toggle;
 						        var target = e.srcElement.parentElement.nextSibling;
@@ -476,12 +485,18 @@ function createCroppingPage () {
 						    }
 						)
 						
-						tdMech.appendChild(tableMech)
-						trMech.appendChild(tdMech)
-						tableBody.appendChild(trMech)
+						tdMech.appendChild(tableMech);
+						trMech.appendChild(tdMech);
+						trMech.classList.toggle('hide');
+						tableBody.appendChild(trMech);
 					}
 					varMechCost();
 					
+					// add row for total variable costs
+					createRows(['Summe variable Kosten','','', (Number(doc[item].variableCosts) + Number(sum.total.toFixed(2)))])
+					// add row for gross margin
+					createRows(['Deckungsbeitrag','','', ((Number(doc[item].price) * Number(doc[item].yield)).toFixed(2) - (Number(doc[item].variableCosts) + Number(sum.total.toFixed(2)))).toFixed(2)])
+
 					// append table to DOM
 				    tableDiv.appendChild(table);
 					
@@ -498,6 +513,9 @@ function createCroppingPage () {
 						table.style.display = 'none'
 					}
 
+					// ------------------------------------------
+					// Sidebar action
+					// ------------------------------------------
 					// add event handler for crop name in sidebar
 					cropHeadline.onclick = function (e) {
 						// toggle clicked class

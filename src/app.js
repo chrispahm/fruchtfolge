@@ -11,8 +11,13 @@ function toHex (str) {
 		return hex
 }
 
+//---------------------------------------------------------
+// Name:      signup
+// Purpose:   Signs up new user
+// Args:      usr name + pw as string
+//---------------------------------------------------------
 function signup (username, password) {
-	var db = new PouchDB('http://v-server-node.ilb.uni-bonn.de:5984/users', {skip_setup: true});
+	var db = new PouchDB(couchPath + '/users', {skip_setup: true});
 
 	var promise = new Promise(function (resolve, reject) {
 		db.signup(username, password, {
@@ -35,8 +40,13 @@ function signup (username, password) {
 	return promise
 }
 
+//---------------------------------------------------------
+// Name:      login
+// Purpose:   user login
+// Args:      usr name + pw as string
+//---------------------------------------------------------
 function login (username, password) {
-	var db = new PouchDB('http://v-server-node.ilb.uni-bonn.de:5984/users', {skip_setup: true});
+	var db = new PouchDB(couchPath + '/users', {skip_setup: true});
 
 	var promise = new Promise(function (resolve, reject) {
 		db.login(username, password, function (err, response) {

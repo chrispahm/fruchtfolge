@@ -3,8 +3,8 @@
 <head>
 	<title>PouchDB</title>
 	<meta charset="utf-8"> 
-	<script src="../src/pouchdb-6.2.0.js"></script>
-	<script src="../src/pouchdb.authentication.min.js"></script>
+	<script src="../src/lib/pouchdb-6.2.0.js"></script>
+	<script src="../src/lib/pouchdb.authentication.min.js"></script>
 	<script src="../src/app.js"></script>
 	<script src="../src/grossMargin2.js"></script>
 	<link rel="stylesheet" href="../css/page1.css" />
@@ -35,13 +35,16 @@
 
 
 <script type="text/javascript">
+// G L O B A L E S
 var profile;
+var couchPath = 'http://127.0.0.1:5984'
+// remote couch at 'http://v-server-node.ilb.uni-bonn.de:5984'
 
 login('batman', 'brucewayne')
   .then(function (response) {
   	console.log('login')
 	profile = new PouchDB('profile')
-	profile.sync('http://v-server-node.ilb.uni-bonn.de:5984/userdb-' + toHex(response.name), {
+	profile.sync( couchPath + '/userdb-' + toHex(response.name), {
 		live: true,
 		retry: true
 	}).on('change', function (info) {
@@ -64,9 +67,9 @@ login('batman', 'brucewayne')
 })
 
 /*
-	var db = new PouchDB('http://localhost:5984/users', {skip_setup: true});
+	var db = new PouchDB(couchPath + '/users', {skip_setup: true});
 
-		db.login('batman', 'brucewayne', function (err, response) {
+		db.signup('batman', 'brucewayne', function (err, response) {
 		  if (err) {
 		    if (err.name === 'unauthorized') {
 		      console.log(err)

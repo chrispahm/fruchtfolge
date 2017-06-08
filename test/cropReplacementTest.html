@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Crop Replacement</title>
+	<script src="../src/replaceProcedure.js"></script>
+	<link rel="stylesheet" href="../css/page1.css" />
+	<link rel="stylesheet" href="../css/page2.css" />
+	<link rel="stylesheet" href="../css/page3.css" />
+</head>
+<style>
+ #blur {
+	opacity: 0.7;
+	visibility: visible;
+ }
+ #replacementBox {
+ 	position: fixed;
+ 	width: 400px;
+ 	height: 500px;
+ 	top: 50%;
+ 	margin-top: -250px;
+ 	left: 50%;
+ 	margin-left: -200px;
+ 	background-color: white;
+ 	z-index: 99;
+ }
+
+#machInputs {
+	width: 320px;
+	position: relative;
+	left: 50%;
+	top: 30px;
+	margin-left: -160px;
+
+}
+
+ .labelDropDown {
+ 	position: relative;
+ 	left: 0px;
+ 	margin-left: 0px;
+ 	display: inline-block;
+ 	margin-top: 0px;
+ 	top: 0px;
+ 	margin-bottom: 5px;
+ }
+
+ .replacementDropDown {
+ 	margin-bottom: 15px;
+ 	width: 320px;
+ 	height: 33px;
+ 	-webkit-appearance: none;
+    -webkit-border-radius: 0px;
+    background: url("data:image/svg+xml;utf8,<svg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='24' height='24' viewBox='0 0 24 24'><path fill='#444' d='M7.406 7.828l4.594 4.594 4.594-4.594 1.406 1.406-6 6-6-6z'></path></svg>");
+    background-position: 100% 50%;
+    background-repeat: no-repeat;
+    font-family: 'open_sanscondensed_light', Helvetica, Arial, sans-serif;
+  	letter-spacing: 0.1em;
+  	padding-left: 5px;
+  	font-size: 18px;
+ }
+
+ #buttonOk {
+ 	position: absolute;
+ 	bottom: 35px;
+ 	left: 45px;
+ 	height: 40px;
+ 	width: 130px;
+ 	border-style: solid;
+    border-width: 1px;
+    border-color: black;
+    background-color: transparent;
+    font-family: 'open_sanscondensed_light', Helvetica, Arial, sans-serif;
+  	letter-spacing: 0.1em;
+  	font-size: 16px;
+  	color: black;
+  	padding: 5px;
+  	border-radius: 0px !important;
+ }
+
+ #buttonCancel {
+ 	position: absolute;
+ 	bottom: 35px;
+ 	right: 45px;
+ 	height: 40px;
+ 	width: 130px;
+ 	border-style: solid;
+    border-width: 1px;
+    border-color: black;
+    background-color: transparent;
+    font-family: 'open_sanscondensed_light', Helvetica, Arial, sans-serif;
+  	letter-spacing: 0.1em;
+  	font-size: 16px;
+  	color: black;
+  	padding: 5px;
+  	border-radius: 0px !important;
+ }
+</style>
+<body>
+<!--
+		Header
+-->
+
+<div class="menu">
+	<p>FRUCHTFOLGE</p>
+</div>
+<div id="blur"></div>
+
+<!--
+		Login Seite
+-->
+
+<input id="weiter" class="weiter-oben" onclick="animation_start2()" type="button" value="WEITER"/>
+
+<div id='tabelle'></div>
+<div id='replacementBox'>
+	<div id='machInputs'>
+		<label class='labelDropDown' for='procedure.group'>Verfahrensgruppe</label>
+		<select class='replacementDropDown' id="procedure.group">
+			<option value="firefox">Firefox</option>
+		</select>
+
+		<label class='labelDropDown' for='procedure.procedure'>Arbeitsverfahren</label>
+		<select class='replacementDropDown' id="procedure.procedure">
+			<option value="firefox">Firefox</option>
+		</select>
+
+		<label class='labelDropDown' for='procedure.combination'>Maschinenkombination</label>
+		<select class='replacementDropDown' id="procedure.combination">
+			<option value="firefox">Firefox</option>
+		</select>
+
+		<label class='labelDropDown' for='procedure.amount'>Menge</label>
+		<select class='replacementDropDown' id="procedure.amount">
+			<option value="firefox">Firefox</option>
+		</select>
+
+		<label class='labelDropDown' for='procedure.workingWidth'>Arbeitsbreite</label>
+		<select class='replacementDropDown' id="procedure.workingWidth">
+			<option value="firefox">Firefox</option>
+		</select>
+	</div>
+	<button id='buttonOk'>ÜBERNEHMEN</button>
+	<button id="buttonCancel">ABBRECHEN</button>
+</div>
+
+	<div id="LeisteCrops">
+		<h2>WINTERGERSTE</h2>
+		<h2>WINTERWEIZEN</h2>
+	</div>
+</body>
+</html>

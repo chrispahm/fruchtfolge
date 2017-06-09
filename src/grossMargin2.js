@@ -84,66 +84,65 @@ function createCroppingPage () {
 			var recommendations = value.a.results[1].docs[0].ok
 			var cropToKTBL = value.a.results[2].docs[0].ok
 
-			var promiseArr = []
+			var requests = {docs: []};
 			crops.forEach(function (crop) {
-				return promiseArr.push(new Promise(function (resolve) {
-					var KTBLname = cropToKTBL[crop]
-					if (typeof KTBLname !== 'undefined') {
-						var id = cropObject[KTBLname].name + '/' + cropObject[KTBLname].tillage[0]
+				var KTBLname = cropToKTBL[crop];
+				if (typeof KTBLname !== 'undefined') {
+					var id = cropObject[KTBLname].name + '/' + cropObject[KTBLname].tillage[0]
 									   + '/' + cropObject[KTBLname].yield[0]
-						var db = new PouchDB(couchPath + 'crops')
-						db.get(id).then(function (result) {
-							var cropDB = {};
-							var specification = result.specification
+					requests.docs.push({id: id})
+				}
+			});
 
-							cropDB.name = crop;
-							cropDB.rotBreak = recommendations[crop].rotBreak
+			function createCrops(data) {
+				var db = new PouchDB(couchPath + 'crops')
+				db.bulkGet(requests).then(function (docs) {
+					docs.results.forEach(function (resultObject, index) {
+						var result = resultObject.docs[0].ok
+						var crop = crops[index]
 
-							var subseqCrops = recommendations[crop].subseqCrops
-							var array = [];
-							subseqCrops.forEach(function (item) {
-								if (crops.indexOf(item) > -1) {
-									array.push(item)
-								}
-							})
+						var cropDB = {};
+						var specification = result.specification
 
-							cropDB.subseqCrops = array
-							cropDB.narrowRot = 'false'
-							cropDB.rootCrop = recommendations[crop].rootCrop
-							cropDB.efaFactor = recommendations[crop].efaFactor
-							cropDB.quality = recommendations[crop].quality
-							cropDB.maxShare = recommendations[crop].maxShare
-							cropDB.leguminosae = recommendations[crop].leguminosae
-							cropDB.procedures = result.specifications
+						cropDB.name = crop;
+						cropDB.rotBreak = recommendations[crop].rotBreak
 
-							profile.get('crops').then(function (cropsStored) {
-								cropsStored[crop] = cropDB
-								profile.put(cropsStored).then(function () {
-									resolve()
-								})
-							}).catch(function (err) {
-								if (err.name == 'not_found') {
-									var cropsStored = {}
-									cropsStored['_id'] = 'crops'
-									cropsStored[crop] = cropDB
-									profile.put(cropsStored).then(function () {
-										resolve()
-									})
-								}
-							})
+						var subseqCrops = recommendations[crop].subseqCrops
+						var array = [];
+						subseqCrops.forEach(function (item) {
+							if (crops.indexOf(item) > -1) {
+								array.push(item)
+							}
 						})
-					}
-					else {
+
+						cropDB.subseqCrops = array
+						cropDB.narrowRot = 'false'
+						cropDB.rootCrop = recommendations[crop].rootCrop
+						cropDB.efaFactor = recommendations[crop].efaFactor
+						cropDB.quality = recommendations[crop].quality
+						cropDB.maxShare = recommendations[crop].maxShare
+						cropDB.leguminosae = recommendations[crop].leguminosae
+						cropDB.procedures = result.specifications
+
+						data[crop] = cropDB;
+					});
+					profile.put(data).then(function () {
 						resolve()
-					}
-				})
-			)
-		})
-		Promise.all(promiseArr).then(function () {
-			resolve()
-		})
-	  })
-	}).then(function () {
+					})
+				});						
+			}
+
+			profile.get('crops').then(function (data) {
+				createCrops(data)
+			}).catch(function (err) {
+				if (err.name == 'not_found') {
+					var cropsStored = {}
+					cropsStored['_id'] = 'crops'
+					createCrops(cropsStored);
+				}
+			});
+		});
+}).then(function () {
 		return new Promise (function (resolve) {
 			var promiseArr = []
 			profile.get('crops').then(function (cropsStored) {

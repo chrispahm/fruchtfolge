@@ -89,9 +89,8 @@ function createCroppingPage () {
 				return promiseArr.push(new Promise(function (resolve) {
 					var KTBLname = cropToKTBL[crop]
 					if (typeof KTBLname !== 'undefined') {
-						console.log(crop);
-						var id = cropObject[KTBLname].name.replace(',','') + '/' + cropObject[KTBLname].tillage[0].replace(',','')
-									   + '/2/' + cropObject[KTBLname].yield[0].replace(',','') + '/120/2'
+						var id = cropObject[KTBLname].name + '/' + cropObject[KTBLname].tillage[0]
+									   + '/' + cropObject[KTBLname].yield[0]
 						var db = new PouchDB(couchPath + 'crops')
 						db.get(id).then(function (result) {
 							var cropDB = {};
@@ -311,9 +310,10 @@ function createCroppingPage () {
 						kopfzeile[0] = "Häufigkeit"
 						//kopfzeile[1] = "Zeitraum"
 						kopfzeile[1] = "Arbeitsvorgang"
-						kopfzeile[2] = "Arbeitszeitbedarf"
-						kopfzeile[3] = "Dieselbedarf"
-						kopfzeile[4] = "Kosten [EUR/ha]"
+						kopfzeile[2] = "Menge"
+						kopfzeile[3] = "Arbeitszeitbedarf"
+						kopfzeile[4] = "Dieselbedarf"
+						kopfzeile[5] = "Kosten [EUR/ha]"
 						//kopfzeile[5] = ""
 
 						// Columns are created
@@ -323,7 +323,7 @@ function createCroppingPage () {
 						    var th = document.createElement('TH');
 						    th.appendChild(document.createTextNode(kopfzeile[i]));
 						    th.classList.add('table-medium');
-						    if (i == 4) {
+						    if (i == 5) {
 						    	th.colSpan = '7'
 						    	th.classList.remove('table-medium');
 						    }
@@ -341,15 +341,16 @@ function createCroppingPage () {
 						//kopfzeile2[0] = ""
 						kopfzeile2[0] = "Zeitraum"
 						kopfzeile2[1] = ""
-						kopfzeile2[2] = "[h/ha]"
-						kopfzeile2[3] = "[l/ha]"
-						kopfzeile2[4] = "Abschreibung"
-						kopfzeile2[5] = "Zinskosten"
-						kopfzeile2[6] = "Sonstiges"
-						kopfzeile2[7] = "Reparaturen"
-						kopfzeile2[8] = "Betriebsstoffe"
-						kopfzeile2[9] = "Dienstleistungen"
-						kopfzeile2[10] = "Summe"
+						kopfzeile2[2] = '../ha'
+						kopfzeile2[3] = "[h/ha]"
+						kopfzeile2[4] = "[l/ha]"
+						kopfzeile2[5] = "Abschreibung"
+						kopfzeile2[6] = "Zinskosten"
+						kopfzeile2[7] = "Sonstiges"
+						kopfzeile2[8] = "Reparaturen"
+						kopfzeile2[9] = "Betriebsstoffe"
+						kopfzeile2[10] = "Dienstleistungen"
+						kopfzeile2[11] = "Summe"
 
 						var tr = document.createElement('TR');
 						tableMechHead.appendChild(tr);
@@ -359,7 +360,7 @@ function createCroppingPage () {
 						    if (i == 1) {
 						    	th.classList.add('table-desc');
 						    }
-						    else if (i > 3) {
+						    else if (i > 4) {
 						    	th.classList.add('table-small');
 						    }
 						    else {
@@ -402,7 +403,13 @@ function createCroppingPage () {
 							Object.keys(procedure).forEach(function (key) {
 								if (key !== 'steps') {
 									var td = document.createElement('TD')
-									td.appendChild(document.createTextNode(procedure[key]))
+									if (key == 'amount') {
+										console.log(procedure.amount)
+										td.appendChild(document.createTextNode(procedure.amount[0]))
+									}
+									else {
+										td.appendChild(document.createTextNode(procedure[key]))
+									}
 									td.style.textAlign = 'center'
 									if (key !== 'name') {
 										td.rowSpan = (procedure.steps.length + 1).toString()
@@ -429,11 +436,13 @@ function createCroppingPage () {
 								tr.classList.toggle(toHex(item) + index.toString());
 								tr.onclick = replaceProcedure;
 
-								var keys = ['description', 'time', 'fuelCons', 'deprec', 'interest', 'others', 'maintenance', 'lubricants', 'services']
+								var keys = ['description', '','time', 'fuelCons', 'deprec', 'interest', 'others', 'maintenance', 'lubricants', 'services']
 
 								keys.forEach(function (key) {
 									var td = document.createElement('TD')
-									td.appendChild(document.createTextNode(step[key]))
+									if (key !== '') {
+										td.appendChild(document.createTextNode(step[key]))
+									}
 									td.style.textAlign = 'center'
 									if (key == 'description') {
 										td.style.textAlign = 'left'

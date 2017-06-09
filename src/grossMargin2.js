@@ -198,7 +198,15 @@ function createCroppingPage () {
 				})
 		})
 	  })
-	}).then(function (){
+	}).then(function () {
+		return new Promise(function (resolve, reject) {
+			var db = new PouchDB(couchPath + '/recommendations');
+			db.get('machCombiObject').then(function (doc) {
+				machCombiObject = doc;
+				resolve()
+			})
+		})
+	}).then(function () {
 		profile.get('crops').then(function (doc) {
 			Object.keys(doc).forEach(function (item, index) {
 				if (!(item == '_id' || item == '_rev')) {
@@ -377,6 +385,7 @@ function createCroppingPage () {
 						doc[item].procedures.forEach(function (procedure, index) {
 							var trStep = document.createElement('TR');
 							trStep.classList.toggle(toHex(item) + index.toString())
+							trStep.onclick = replaceProcedure;
 							//var tdStep = document.createElement('TD')
 							//tdStep.colSpan = '4'
 							function isEven(n) {
@@ -418,6 +427,7 @@ function createCroppingPage () {
 								var step = procedure.steps[i];
 								var tr = document.createElement('TR');
 								tr.classList.toggle(toHex(item) + index.toString());
+								tr.onclick = replaceProcedure;
 
 								var keys = ['description', 'time', 'fuelCons', 'deprec', 'interest', 'others', 'maintenance', 'lubricants', 'services']
 

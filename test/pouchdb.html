@@ -12,6 +12,114 @@
 	<link rel="stylesheet" href="../css/page2.css" />
 	<link rel="stylesheet" href="../css/page3.css" />
 </head>
+<style type="text/css">
+	#blur {
+	opacity: 0.95;
+	visibility: visible;
+ }
+ #replacementBox {
+ 	position: fixed;
+ 	width: 400px;
+ 	height: 500px;
+ 	top: 50%;
+ 	margin-top: -250px;
+ 	left: 50%;
+ 	margin-left: -200px;
+ 	background-color: white;
+ 	border: 1px solid;
+ 	border-color: #CCCCCC;
+ 	z-index: 99;
+ }
+
+#machInputs {
+	width: 320px;
+	position: relative;
+	left: 50%;
+	top: 30px;
+	margin-left: -160px;
+
+}
+
+ .labelDropDown {
+ 	position: relative;
+ 	left: 0px;
+ 	margin-left: 0px;
+ 	display: inline-block;
+ 	margin-top: 0px;
+ 	top: 0px;
+ 	margin-bottom: 5px;
+ }
+
+ .replacementDropDown {
+ 	margin-bottom: 15px;
+ 	width: 320px;
+ 	height: 33px;
+ 	-webkit-appearance: none;
+    -webkit-border-radius: 0px;
+    background: url("data:image/svg+xml;utf8,<svg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='24' height='24' viewBox='0 0 24 24'><path fill='#444' d='M7.406 7.828l4.594 4.594 4.594-4.594 1.406 1.406-6 6-6-6z'></path></svg>");
+    background-position: 100% 50%;
+    background-repeat: no-repeat;
+    font-family: 'open_sanscondensed_light', Helvetica, Arial, sans-serif;
+  	letter-spacing: 0.1em;
+  	padding-left: 5px;
+  	padding-right: 25px;
+  	font-size: 14px;
+ }
+
+ #buttonOk {
+ 	position: absolute;
+ 	bottom: 35px;
+ 	left: 45px;
+ 	height: 40px;
+ 	width: 130px;
+ 	border-style: solid;
+    border-width: 1px;
+    border-color: black;
+    background-color: transparent;
+    font-family: 'open_sanscondensed_light', Helvetica, Arial, sans-serif;
+  	letter-spacing: 0.1em;
+  	font-size: 14px;
+  	color: black;
+  	padding: 5px;
+  	border-radius: 0px !important;
+ }
+
+ #buttonOk:hover {
+ 	background-color: #79ae98;
+ 	color: white;
+ }
+
+  #buttonOk:active {
+ 	background-color: #679481;
+ 	color: white;
+ }
+
+ #buttonCancel {
+ 	position: absolute;
+ 	bottom: 35px;
+ 	right: 45px;
+ 	height: 40px;
+ 	width: 130px;
+ 	border-style: solid;
+    border-width: 1px;
+    border-color: black;
+    background-color: transparent;
+    font-family: 'open_sanscondensed_light', Helvetica, Arial, sans-serif;
+  	letter-spacing: 0.1em;
+  	font-size: 14px;
+  	color: black;
+  	padding: 5px;
+  	border-radius: 0px !important;
+ }
+
+ #buttonCancel:hover {
+ 	background-color: rgba(0,0,0,0.05)
+ }
+
+  #buttonCancel:active {
+ 	background-color: rgba(0,0,0,0.2)
+ }
+</style>
 <body>
 <!--
 		Header
@@ -20,7 +128,7 @@
 <div class="menu">
 	<p>FRUCHTFOLGE</p>
 </div>
-
+<div class='hide' id="blur"></div>
 <!--
 		Login Seite
 -->
@@ -29,16 +137,40 @@
 
 <div id='tabelle'></div>
 
-	<div id="LeisteCrops">
-	</div>
+<div class='hide' id='replacementBox'>
+	<div id='machInputs'>
+		<label class='labelDropDown' for='procedure.group'>Verfahrensgruppe</label>
+		<select class='replacementDropDown' id="procedure.group">
+		</select>
 
-	<nav id='menu-ui' class='menu-ui'></nav>
+		<label class='labelDropDown' for='procedure.procedure'>Arbeitsverfahren</label>
+		<select class='replacementDropDown' id="procedure.procedure">
+		</select>
+
+		<label class='labelDropDown' for='procedure.combination'>Maschinenkombination</label>
+		<select class='replacementDropDown' id="procedure.combination">
+		</select>
+
+		<label class='labelDropDown' for='procedure.amount'>Menge</label>
+		<select class='replacementDropDown' id="procedure.amount">
+		</select>
+
+		<label class='labelDropDown' for='procedure.workingWidth'>Arbeitsbreite</label>
+		<select class='replacementDropDown' id="procedure.workingWidth">
+		</select>
+	</div>
+	<button id='buttonOk'>ÜBERNEHMEN</button>
+	<button id="buttonCancel">ABBRECHEN</button>
+</div>
+
+<div id="LeisteCrops"></div>
 
 
 <script type="text/javascript">
 // G L O B A L E S
 var profile;
 var couchPath = 'http://127.0.0.1:5984'
+var machCombiObject;
 // remote couch at 'http://v-server-node.ilb.uni-bonn.de:5984'
 
 login('batman', 'brucewayne')

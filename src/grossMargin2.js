@@ -403,8 +403,9 @@ function createCroppingPage () {
 								if (key !== 'steps') {
 									var td = document.createElement('TD')
 									if (key == 'amount') {
-										console.log(procedure.amount)
-										td.appendChild(document.createTextNode(procedure.amount[0]))
+										if (procedure.amount !== '') {
+											td.appendChild(document.createTextNode(procedure.amount[0] + ' ' + procedure.amount[1]))
+										}
 									}
 									else {
 										td.appendChild(document.createTextNode(procedure[key]))
@@ -435,13 +436,11 @@ function createCroppingPage () {
 								tr.classList.toggle(toHex(item) + index.toString());
 								tr.onclick = replaceProcedure;
 
-								var keys = ['description', '','time', 'fuelCons', 'deprec', 'interest', 'others', 'maintenance', 'lubricants', 'services']
+								var keys = ['description','time', 'fuelCons', 'deprec', 'interest', 'others', 'maintenance', 'lubricants', 'services']
 
 								keys.forEach(function (key) {
 									var td = document.createElement('TD')
-									if (key !== '') {
-										td.appendChild(document.createTextNode(step[key]))
-									}
+									td.appendChild(document.createTextNode(step[key]))
 									td.style.textAlign = 'center'
 									if (key == 'description') {
 										td.style.textAlign = 'left'
@@ -473,7 +472,7 @@ function createCroppingPage () {
 							//trStep.appendChild(tdStep)
 							//tableMechBody.appendChild(trStep)
 						})
-						var sumKeys = ['','','sum','time', 'fuelCons', 'deprec', 'interest', 'others', 'maintenance', 'lubricants', 'services', 'total']
+						var sumKeys = ['','','','sum','time', 'fuelCons', 'deprec', 'interest', 'others', 'maintenance', 'lubricants', 'services', 'total']
 						var trSum = document.createElement('TR')
 						sumKeys.forEach(function (key) {
 							var tdSum = document.createElement('TD')

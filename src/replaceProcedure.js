@@ -1,7 +1,11 @@
 function replaceProcedure (e) {
 	var index = e.srcElement.parentElement.classList.value;
 	var srcTable = e.srcElement.parentElement.parentElement;
-	var trArray = document.getElementsByClassName(index);
+	var trList = document.getElementsByClassName(index);
+	var trArray = [];
+	for (var i = 0; i < trList.length; i++) {
+		trArray.push(trList[i]);
+	}
 	var procedureName = trArray[0].children[2].innerHTML;
 	var procedureNameOrig = trArray[0].children[2].innerHTML;
 	// if procedure contains of more than 1 step, the combination names are combined
@@ -20,12 +24,15 @@ function replaceProcedure (e) {
 		var combinationName = trArray[1].children[0].innerHTML;
 	}
 	var groupName, amountName, workingWidthName;
+	if (trArray[0].children[3].innerHTML !== '') {
+		amountName = trArray[0].children[3].innerHTML.split(' ')[0];
+	}
 
 	function createOptions (item, elem) {
 		var option = document.createElement('option');
 		option.innerHTML = item;
 		option.value = item;
-		if (item == groupName || item == procedureName || item == combinationName) {
+		if (item == groupName || item == procedureName || item == combinationName || item == amountName.slice(0, -1)) {
 			option.selected = 'selected';
 		}
 		elem.appendChild(option);
@@ -42,7 +49,9 @@ function replaceProcedure (e) {
 		if (procedureName in machCombiObject[item]) {
 			groupName = item;
 			//console.log(item + ' ' + combinationName)
-			amountName = machCombiObject[item][procedureName][combinationName].amount[0];
+			if (typeof amountName == 'undefined') {
+				amountName = machCombiObject[item][procedureName][combinationName].amount[0];
+			}
 			workingWidthName = machCombiObject[item][procedureName][combinationName].workingWidth[0];
 		}
 	});
@@ -70,7 +79,9 @@ function replaceProcedure (e) {
 					groupName = item;
 					procedureName = itemProcedure;
 					//console.log(groupName)
-					amountName = machCombiObject[item][itemProcedure][combinationName].amount[0];
+					if (typeof amountName == 'undefined') {
+						amountName = machCombiObject[item][itemProcedure][combinationName].amount[0];
+					}
 					workingWidthName = machCombiObject[item][itemProcedure][combinationName].workingWidth[0];
 					break loop1;					
 				}
@@ -91,7 +102,7 @@ function replaceProcedure (e) {
 	var group = document.getElementById('procedure.group');
 	group.innerHTML = '';
 	Object.keys(machCombiObject).forEach(function (item) {
-		if (item == 'id') {
+		if (item == 'id' || item == '_id' || item == '_rev') {
 			return
 		}
 		createOptions(item, group);
@@ -159,6 +170,26 @@ function replaceProcedure (e) {
 		document.getElementById('procedure.combination').innerHTML = '';
 		document.getElementById('procedure.amount').innerHTML = '';
 		document.getElementById('procedure.workingWidth').innerHTML = '';
+
+		Object.keys(machCombiObject[group][Object.keys(machCombiObject[group])[1]]).forEach(function (item) {
+			if (item == 'id') {
+				return
+			}
+			createOptions(item, combination);
+		});
+
+		machCombiObject[group][Object.keys(machCombiObject[group])[1]][Object.keys(machCombiObject[group][Object.keys(machCombiObject[group])[1]])[1]].amount.forEach(function (item) {
+			if (item == 'id') {
+				return
+			}
+			createOptions(item, amount);
+		});
+		machCombiObject[group][Object.keys(machCombiObject[group])[1]][Object.keys(machCombiObject[group][Object.keys(machCombiObject[group])[1]])[1]].workingWidth.forEach(function (item) {
+			if (item == 'id') {
+				return
+			}
+			createOptions(item, workingWidth);
+		});
 	};
 
 	procedure.onchange = function () {
@@ -221,6 +252,11 @@ function replaceProcedure (e) {
 	// handle accept button
 	var acceptButton = document.getElementById('buttonOk');
 	acceptButton.onclick = function () {
+		console.log(trArray.length)
+		for (var i = 0; i < trArray.length; i++) {
+			srcTable.removeChild(trArray[i])
+		}
+
 		box.classList.toggle('hide');
 		blur.classList.toggle('hide');
 	};

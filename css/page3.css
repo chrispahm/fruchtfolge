@@ -157,7 +157,7 @@ table {
 }
 
 .table-desc {
-  width: 30%;
+  width: 25%;
   overflow-wrap: break-word;
   word-wrap: break-word; 
 }
@@ -183,6 +183,7 @@ td input {
 th {
 	padding: 10px;
 	font-family: 'open_sanscondensed_light', sans-serif;
+  word-wrap: break-word;
 	background: #79ae98;
 	color: #fff;
 	letter-spacing: 0.05em;

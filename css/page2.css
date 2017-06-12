@@ -109,7 +109,7 @@ nav#menu-ui a {
 
 .weiter-oben {
   display: block;
-  position: absolute;
+  position: fixed;
   top: 15px;
   right: 40px;
   width: 130px;
@@ -127,10 +127,14 @@ nav#menu-ui a {
     border-radius: 0 !important;
 }
 
+.weiter-oben:hover {
+  background-color: rgba(0,0,0,0.05)
+}
+
 .weiter-oben:active {
     vertical-align: top;
     padding-top: 6px;
-    background: rgba(0,0,0,0.02);
+    background-color: rgba(0,0,0,0.2)
 }
 
 #Leiste {

@@ -1,10 +1,9 @@
 function replaceProcedure (e) {
-	var trClass = e.srcElement.parentElement.classList.value;
+	var trClass = e.parentElement.classList.value;
 	if (trClass !== 'insertBeforeButton') {
 		var cropName = trClass.split(';')[0];
 		var procedureIndex = Number(trClass.split(';')[1]);
-		var srcTable = e.srcElement.parentElement.parentElement;
-		console.log(srcTable)
+		var srcTable = e.parentElement.parentElement;
 		var trList = document.getElementsByClassName(trClass);
 		var trArray = [];
 		for (var i = 0; i < trList.length; i++) {
@@ -22,9 +21,8 @@ function replaceProcedure (e) {
 		}
 	}
 	else {
-		var srcTable = e.srcElement.parentElement.parentElement.parentElement;
-		console.log(srcTable)
-		var trClassTable = e.srcElement.parentElement.parentElement.classList.value;
+		var srcTable = e.parentElement.parentElement.parentElement;
+		var trClassTable = e.parentElement.parentElement.classList.value;
 		var cropName = trClassTable.split(';')[0];
 		var procedureIndex = Number(trClassTable.split(';')[1]);
 		var trList = document.getElementsByClassName(trClassTable);
@@ -248,14 +246,21 @@ function replaceProcedure (e) {
 			db.get(id).then(function (procedure) {
 				// create new entry
 				var trStep = document.createElement('TR');
-				trStep.classList.toggle(trClass);
+				if (trClass !== 'insertBeforeButton') {
+					trStep.classList.toggle(trClass);
+				}
+				else {
+					var classAlt =  e.parentElement.parentElement.classList.value;
+					trStep.classList.toggle(classAlt);
+				}
+				
 				trStep.setAttribute("name", ids.group + ';' + ids.procedure + ';' + ids.combination);
 
 				if (trClass !== 'insertBeforeButton') {
 					var backgroundColour = trArray[0].style.background;
 				}
 				else {
-					if (trArray[0].style.background == '#ECECEC') {
+					if (trArray[0].children[1].style.background == '#ECECEC') {
 						var backgroundColour = '#F5F5F5';
 					}
 					else {
@@ -274,7 +279,9 @@ function replaceProcedure (e) {
 				tdBefore.style.background = '#F5F5F5';
 				tdBefore.innerHTML = '<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"width="64px" height="64px" viewBox="0 0 64 64" style="enable-background:new 0 0 64 64;" xml:space="preserve"> <g> <g> <g id="circle_copy_4"> <g> <path d="M32,0C14.327,0,0,14.327,0,32s14.327,32,32,32s32-14.327,32-32S49.673,0,32,0z M32,62.001C15.432,62.001,2,48.568,2,32 C2,15.432,15.432,2,32,2c16.568,0,30,13.432,30,30C62,48.568,48.568,62.001,32,62.001z" fill="grey"/> </g> </g> <g id="Menu_1_"> <g> <polygon points="44,31 33,31 33,20 31,20 31,31 20,31 20,33 31,33 31,44 33,44 33,33 44,33 				" fill="grey"/> </g> </g> </g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> </svg>';
 				tdBefore.children[0].classList.toggle('insertBefore');
-				tdBefore.children[0].onclick = replaceProcedure;
+				tdBefore.children[0].onclick = function () {
+								replaceProcedure(tdBefore.children[0]);
+				};
 				tdBefore.classList.toggle('insertBeforeButton');
 				tdBefore.rowSpan = (procedure.steps.length + 1).toString();
 				trStep.appendChild(tdBefore);
@@ -318,7 +325,9 @@ function replaceProcedure (e) {
 					if (i == 9) {
 						td.innerHTML = '<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"width="64px" height="64px" viewBox="0 0 64 64" style="enable-background:new 0 0 64 64;" xml:space="preserve"> <g> <g> <g id="circle_63_"> <g> <path d="M32,0C14.327,0,0,14.327,0,32s14.327,32,32,32s32-14.327,32-32S49.673,0,32,0z M32,62C15.432,62,2,48.568,2,32 C2,15.432,15.432,2,32,2c16.568,0,30,13.432,30,30C62,48.568,48.568,62,32,62z" fill="grey"/> </g> </g> <g id="Rectangle_2_copy"> <g> <path d="M37,24v-2c0-1.104-0.896-2-2-2h-6c-1.104,0-2,0.896-2,2v2h-5v2h2v16c0,1.104,0.896,2,2,2h12c1.104,0,2-0.896,2-2V26h2 v-2H37z M29,22h6v2h-6V22z M38,42H26V26h12V42z M31,28h-2v12h2V28z M35,28h-2v12h2V28z" fill="grey"/> </g> </g> </g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> </svg>';
 						td.children[0].classList.toggle('deleteHover')
-						td.children[0].onclick = deleteProcedure;
+						td.children[0].onclick = function () {
+							deleteProcedure(td);
+						};
 						td.classList.toggle('deleteButton');
 						td.rowSpan = (rowLength).toString();
 					}
@@ -351,7 +360,9 @@ function replaceProcedure (e) {
 						td.style.textAlign = 'center';
 						if (key == 'description') {
 							td.style.textAlign = 'left';
-							td.onclick = replaceProcedure;
+							td.onclick = function () {
+								replaceProcedure(td);
+							};
 						}
 						tr.style.background = backgroundColour;
 						tr.appendChild(td);

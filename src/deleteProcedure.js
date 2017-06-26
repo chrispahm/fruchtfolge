@@ -1,8 +1,10 @@
 function deleteProcedure(e) {
-	var trClass = e.srcElement.parentElement.parentElement.classList.value;
+	//console.log(e)
+	var trClass = e.parentElement.classList.value;
 	var cropName = trClass.split(';')[0];
+	//console.log(cropName)
 	var procedureIndex = Number(trClass.split(';')[1]);
-	var srcTable = e.srcElement.parentElement.parentElement.parentElement;
+	var srcTable = e.parentElement.parentElement;
 	var trList = document.getElementsByClassName(trClass);
 	var trArray = [];
 	for (var i = 0; i < trList.length; i++) {

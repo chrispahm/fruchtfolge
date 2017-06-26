@@ -5,10 +5,15 @@
 	<meta charset="utf-8"> 
 	<script src="../src/lib/pouchdb-6.2.0.js"></script>
 	<script src="../src/lib/pouchdb.authentication.min.js"></script>
+	<script src="../src/lib/turf.min.js"></script>
+	<script src="../src/lib/proj4.js"></script>
 	<script src="../src/app.js"></script>
 	<script src="../src/deleteProcedure.js"></script>
 	<script src="../src/replaceProcedure.js"></script>
 	<script src="../src/grossMargin2.js"></script>
+	<script src="../src/requests.js"></script>
+	<script src="../src/soilQuality.js"></script>
+	<script src="../src/plotData.js"></script>
 	<link rel="stylesheet" href="../css/page1.css" />
 	<link rel="stylesheet" href="../css/page2.css" />
 	<link rel="stylesheet" href="../css/page3.css" />
@@ -159,6 +164,19 @@
  .insertBeforeButton:hover .insertBefore {
  	visibility: visible;
  }
+
+ #subseqCrops {
+ 	position: relative;
+ 	width: 200px;
+ 	top: 50px;
+ 	left: 50px;
+ }
+
+ h2 {
+ 	font-size: 18px;
+ 	letter-spacing: 0.2em;
+ 	font-weight: normal;
+ }
 </style>
 <body>
 <!--
@@ -175,34 +193,36 @@
 
 <input id="weiter" class="weiter-oben" onclick="animation_start2()" type="button" value="WEITER"/>
 
-<div id='tabelle'></div>
+<div id='stepProcedures'>
+		<div id='tabelle'></div>
 
-<div class='hide' id='replacementBox'>
-	<div id='machInputs'>
-		<label class='labelDropDown' for='procedure.group'>Verfahrensgruppe</label>
-		<select class='replacementDropDown' id="procedure.group">
-		</select>
+	<div class='hide' id='replacementBox'>
+		<div id='machInputs'>
+			<label class='labelDropDown' for='procedure.group'>Verfahrensgruppe</label>
+			<select class='replacementDropDown' id="procedure.group">
+			</select>
 
-		<label class='labelDropDown' for='procedure.procedure'>Arbeitsverfahren</label>
-		<select class='replacementDropDown' id="procedure.procedure">
-		</select>
+			<label class='labelDropDown' for='procedure.procedure'>Arbeitsverfahren</label>
+			<select class='replacementDropDown' id="procedure.procedure">
+			</select>
 
-		<label class='labelDropDown' for='procedure.combination'>Maschinenkombination</label>
-		<select class='replacementDropDown' id="procedure.combination">
-		</select>
+			<label class='labelDropDown' for='procedure.combination'>Maschinenkombination</label>
+			<select class='replacementDropDown' id="procedure.combination">
+			</select>
 
-		<label class='labelDropDown' for='procedure.amount'>Menge</label>
-		<select class='replacementDropDown' id="procedure.amount">
-		</select>
+			<label class='labelDropDown' for='procedure.amount'>Menge</label>
+			<select class='replacementDropDown' id="procedure.amount">
+			</select>
 
-		<label class='labelDropDown' for='procedure.workingWidth'>Arbeitsbreite</label>
-		<select class='replacementDropDown' id="procedure.workingWidth">
-		</select>
+			<label class='labelDropDown' for='procedure.workingWidth'>Arbeitsbreite</label>
+			<select class='replacementDropDown' id="procedure.workingWidth">
+			</select>
+		</div>
+		<button id='buttonOk'>ÜBERNEHMEN</button>
+		<button id="buttonCancel">ABBRECHEN</button>
 	</div>
-	<button id='buttonOk'>ÜBERNEHMEN</button>
-	<button id="buttonCancel">ABBRECHEN</button>
+	<div id='subseqCrops'></div>
 </div>
-
 <div id="LeisteCrops"></div>
 
 

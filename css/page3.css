@@ -29,6 +29,7 @@ button:focus {
 #LeisteCrops {
   position: fixed;
   padding-top: 20px;
+  overflow-x: hidden;
   overflow-y: scroll;
   top: 70px;
   right: 0px;

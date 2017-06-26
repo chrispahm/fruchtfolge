@@ -12,6 +12,14 @@ function toHex (str) {
 		return hex
 }
 */
+function searchValueinObject (object, value ) {
+    for( var prop in object ) {
+        if( object.hasOwnProperty( prop ) ) {
+             if( object[ prop ] === value )
+                 return prop;
+        }
+    }
+}
 
 function createCroppingPage () {
 	return new Promise (function (resolve, reject) {
@@ -34,7 +42,6 @@ function createCroppingPage () {
 			        	crops.splice(crops.indexOf(item), 1);
 			    	}
 				})
-
 				if (crops.length > 0) {
 					resolve(crops)
 				}
@@ -98,11 +105,10 @@ function createCroppingPage () {
 				var db = new PouchDB(couchPath + 'crops')
 				db.bulkGet(requests).then(function (docs) {
 					docs.results.forEach(function (resultObject, index) {
-						var result = resultObject.docs[0].ok
-						var crop = crops[index]
-
+						var result = resultObject.docs[0].ok;
+						var crop = searchValueinObject(cropToKTBL,result['_id'].split('/')[0]);
 						var cropDB = {};
-						var specification = result.specification
+						var specification = result.specification;
 
 						cropDB.name = crop;
 						cropDB.rotBreak = recommendations[crop].rotBreak
@@ -146,8 +152,9 @@ function createCroppingPage () {
 		return new Promise (function (resolve) {
 			var promiseArr = []
 			profile.get('crops').then(function (cropsStored) {
+				// || typeof cropsStored[crop].price !== 'undefined' || typeof cropsStored[crop].yield !== 'undefined'
 				Object.keys(cropsStored).forEach(function (crop) {
-					if (crop == '_id' || crop == '_rev') {
+					if (crop == '_id' || crop == '_rev'  || cropsStored[crop].price > 0 || cropsStored[crop].yield > 0 ) {
 						return
 					}
 					else {
@@ -166,7 +173,7 @@ function createCroppingPage () {
 							else if (crop == 'Winterroggen' || crop == 'Sommerroggen'){
 								var id = 'Roggen/Deutschland/2016'
 							}
-							else if (crop == 'Ackerbohnen' || crop == 'Erbsen'){
+							else if (crop == 'Acker-/Puff-/Pferdebohne' || crop == 'Erbsen'){
 								var id = 'Eiweißpflanzen/Deutschland/2016'
 							}
 							else if (crop == 'Winterraps' || crop == 'Sommerraps' || crop == 'Raps'){
@@ -206,7 +213,8 @@ function createCroppingPage () {
 		})
 	}).then(function () {
 		profile.get('crops').then(function (doc) {
-			Object.keys(doc).forEach(function (item, index) {
+			var availCrops = Object.keys(doc);
+			availCrops.forEach(function (item, index) {
 				if (!(item == '_id' || item == '_rev')) {
 					var cropDiv = document.createElement('div')
 					cropDiv.setAttribute("name", 'cropGM');
@@ -256,19 +264,34 @@ function createCroppingPage () {
 
 			            var td1 = document.createElement('TD')
 			            td1.appendChild(document.createTextNode(content[1]));
+			            if (content[1] == doc[item].yield) {
+			            	td1.ondblclick = function () {
+			            		bearbeiten(this, 'yield')
+			            	}
+			            }
 			            td1.style.textAlign = 'center'
 			            //td1.style.width = '98px'
 			            tr.appendChild(td1);
 
 			            var td2 = document.createElement('TD')
 			            td2.appendChild(document.createTextNode(content[2]));
-			            td2.style.textAlign = 'center'
+			            td2.style.textAlign = 'center';
+			            if (content[2] == doc[item].price) {
+			            	td2.ondblclick = function () {
+			            		bearbeiten(this, 'price')
+			            	}
+			            }
 			            //td2.style.width = '98px'
 			            tr.appendChild(td2);
 
 			            var td3 = document.createElement('TD')
 			            td3.appendChild(document.createTextNode(content[3]));
-			            td3.style.textAlign = 'center'
+			            td3.style.textAlign = 'center';
+			            if (content[3] == doc[item].variableCosts) {
+			            	td3.ondblclick = function () {
+			            		bearbeiten(this, 'variableCosts')
+			            	}
+			            }
 			            //td3.style.width = '108px'
 			            tr.appendChild(td3);
 
@@ -414,7 +437,9 @@ function createCroppingPage () {
 							tdBefore.style.background = '#F5F5F5';
 							tdBefore.innerHTML = '<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"width="64px" height="64px" viewBox="0 0 64 64" style="enable-background:new 0 0 64 64;" xml:space="preserve"> <g> <g> <g id="circle_copy_4"> <g> <path d="M32,0C14.327,0,0,14.327,0,32s14.327,32,32,32s32-14.327,32-32S49.673,0,32,0z M32,62.001C15.432,62.001,2,48.568,2,32 C2,15.432,15.432,2,32,2c16.568,0,30,13.432,30,30C62,48.568,48.568,62.001,32,62.001z" fill="grey"/> </g> </g> <g id="Menu_1_"> <g> <polygon points="44,31 33,31 33,20 31,20 31,31 20,31 20,33 31,33 31,44 33,44 33,33 44,33 				" fill="grey"/> </g> </g> </g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> </svg>';
 							tdBefore.children[0].classList.toggle('insertBefore');
-							tdBefore.children[0].onclick = replaceProcedure;
+							tdBefore.children[0].onclick = function () {
+								replaceProcedure(tdBefore.children[0]);
+							};
 							tdBefore.classList.toggle('insertBeforeButton');
 							tdBefore.rowSpan = (procedure.steps.length + 1).toString();
 							trStep.appendChild(tdBefore);
@@ -453,7 +478,9 @@ function createCroppingPage () {
 									}
 									else {
 										td.style.textAlign = 'left';
-										td.onclick = replaceProcedure;
+										td.onclick = function () {
+											replaceProcedure(td);
+										};
 									}
 									trStep.appendChild(td);
 								}
@@ -465,7 +492,9 @@ function createCroppingPage () {
 									//td.innerHTML = '<svg viewPort="0 0 12 12" version="1.1"xmlns="http://www.w3.org/2000/svg"> <line x1="1" y1="11"x2="11" y2="1"stroke="grey"stroke-width="1"/> <line x1="1" y1="1"x2="11" y2="11"stroke="grey"stroke-width="1"/> </svg>';
 									td.innerHTML = '<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"width="64px" height="64px" viewBox="0 0 64 64" style="enable-background:new 0 0 64 64;" xml:space="preserve"> <g> <g> <g id="circle_63_"> <g> <path d="M32,0C14.327,0,0,14.327,0,32s14.327,32,32,32s32-14.327,32-32S49.673,0,32,0z M32,62C15.432,62,2,48.568,2,32 C2,15.432,15.432,2,32,2c16.568,0,30,13.432,30,30C62,48.568,48.568,62,32,62z" fill="grey"/> </g> </g> <g id="Rectangle_2_copy"> <g> <path d="M37,24v-2c0-1.104-0.896-2-2-2h-6c-1.104,0-2,0.896-2,2v2h-5v2h2v16c0,1.104,0.896,2,2,2h12c1.104,0,2-0.896,2-2V26h2 v-2H37z M29,22h6v2h-6V22z M38,42H26V26h12V42z M31,28h-2v12h2V28z M35,28h-2v12h2V28z" fill="grey"/> </g> </g> </g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> </svg>';
 									td.children[0].classList.toggle('deleteHover')
-									td.children[0].onclick = deleteProcedure;
+									td.children[0].onclick = function () {
+										deleteProcedure(td);
+									};
 									td.classList.toggle('deleteButton');
 									td.rowSpan = (procedure.steps.length + 1).toString();
 								}
@@ -492,7 +521,9 @@ function createCroppingPage () {
 									td.style.textAlign = 'center'
 									if (key == 'description') {
 										td.style.textAlign = 'left';
-										td.onclick = replaceProcedure;
+										td.onclick = function () {
+											replaceProcedure(td);
+										};
 									}
 									tr.style.background = backgroundColour;
 									tr.appendChild(td);
@@ -500,7 +531,8 @@ function createCroppingPage () {
 
 								var tdSum = document.createElement('TD');
 								// add individual diesel price in future version
-								var sumHori = (step.deprec + step.interest + step.others + step.maintenance + step.lubricants + step.services + step.fuelCons * 1).toFixed(2)
+								// step.deprec + step.interest step.others + + step.fuelCons * 0.7)
+								var sumHori = (step.maintenance + step.lubricants + step.services).toFixed(2)
 								tdSum.appendChild(document.createTextNode(sumHori))
 								tdSum.style.textAlign = 'center'
 								tr.appendChild(tdSum)
@@ -559,26 +591,123 @@ function createCroppingPage () {
 					varMechCost();
 					
 					// add row for total variable costs
-					createRows(['Summe variable Kosten','','', (Number(doc[item].variableCosts) + Number(sum.total.toFixed(2)))])
+					// add interest costs
+					createRows(['Zinskosten (3 Monate)','','', (Number(sum.total.toFixed(2)) / 12 * 3 * 0.03).toFixed(2)]);
+					createRows(['Summe variable Kosten','','', (Number(doc[item].variableCosts) + Number(sum.total.toFixed(2)) + Number(sum.total.toFixed(2)) / 12 * 3 * 0.03 ).toFixed(2)]);
 					// add row for gross margin
-					createRows(['Deckungsbeitrag','','', ((Number(doc[item].price) * Number(doc[item].yield)).toFixed(2) - (Number(doc[item].variableCosts) + Number(sum.total.toFixed(2)))).toFixed(2)])
+					createRows(['Deckungsbeitrag','','', ((Number(doc[item].price) * Number(doc[item].yield)).toFixed(2) - (Number(doc[item].variableCosts) + Number(sum.total.toFixed(2)) + Number(sum.total.toFixed(2)) / 12 * 3 * 0.03)).toFixed(2)])
 
 					// append table to DOM
 				    tableDiv.appendChild(table);
-					
+
+				    // add Checkboxes for Subsequent crops
+				    var container = document.createElement('div');
+				    container.classList.toggle(item.toUpperCase());
+				    var headline = document.createElement('h2');
+				    	headline.innerHTML = 'FOLGEFRÜCHTE';
+				    container.appendChild(headline);
+
+				    availCrops.forEach(function (subseqCrop) {
+				    	if (subseqCrop == '_id' || subseqCrop == '_rev') {
+				    		return
+				    	}
+			    		var checkbox = document.createElement('input');
+						checkbox.type = "checkbox";
+						checkbox.style.display = 'inline-block';
+						checkbox.value = subseqCrop;
+						checkbox.id = 'subseqCrop/' + subseqCrop;
+						//checkbox.checked = true;
+
+						var label = document.createElement('label')
+						label.htmlFor = 'subseqCrop/' + subseqCrop;
+						label.appendChild(document.createTextNode(subseqCrop));
+
+				    	if (doc[item].subseqCrops.indexOf(subseqCrop) > -1) {
+				    		//console.log('hier')
+				    		checkbox.checked = true;
+				    	}
+
+				    	container.appendChild(checkbox);
+						container.appendChild(label);
+						container.appendChild(document.createElement('br'));
+				    });
+					var subseqCropsDiv = document.getElementById('subseqCrops');
+					subseqCropsDiv.appendChild(container);
+
+					// set rotational break time
+					var rotBreak = document.createElement('h2');
+				    	rotBreak.innerHTML = 'ANBAUPAUSE IN JAHREN: ' +  doc[item].rotBreak;
+				    	rotBreak.ondblclick = function () {
+				    		bearbeiten(this,'rotBreak');
+				    	}
+				    container.appendChild(rotBreak);
+
+				    // set max rotational share
+				    var maxShare = document.createElement('h2');
+				    	maxShare.innerHTML = 'MAX. ANTEIL ANBAUFLÄCHE: ' + doc[item].maxShare * 100 +'%';
+				    	maxShare.ondblclick = function () {
+				    		bearbeiten(this, 'maxShare');
+				    	}
+				    container.appendChild(maxShare);
+
 				    // create crop names in sidebar
 					var cropHeadline = document.createElement('h2');
 					cropHeadline.innerHTML = item.toUpperCase();
 
 					// hide all tables except first one
 					if (index == 0) {
-						table.style.display = 'block'
-						cropHeadline.classList.toggle('clicked')
+						table.style.display = 'block';
+						container.style.display = 'block';
+						cropHeadline.classList.toggle('clicked');
 					}
 					else {
 						table.style.display = 'none'
+						container.style.display = 'none';
+					}
+					// handle changes in dom
+
+					function bearbeiten(x, setting) {
+					    var ursprung = x.innerHTML;
+					    if (ursprung !== "<input type=\"text\">") {
+					       var text = x.innerHTML;
+					       x.innerHTML = "";
+					       var textfeld = document.createElement("INPUT");
+					       textfeld.setAttribute("type", "text");
+					       textfeld.value = text;
+					       x.appendChild(textfeld);
+					       textfeld.focus();
+					       textfeld.onkeypress = checkEnter;
+					       textfeld.onblur = function() {
+					           if (textfeld.value == text) {
+					               x.innerHTML = text;
+					           } else {
+					               x.innerHTML = textfeld.value;
+					               // update db
+					               profile.get('crops').then(function (docs) {
+					               	var number = textfeld.value.replace('%','').replace( /^\D+/g, '');
+					               	console.log(number)
+					               	if (setting == 'maxShare') {
+					               		docs[item][setting] = number / 100;
+					               	}
+					          		else {
+					          			console.log(docs[item][setting])
+					          			docs[item][setting] = Number(number);
+					          			console.log(docs[item][setting])
+					          		} 
+					               		return profile.put(docs);
+					               })
+					           }
+					       };
+					    }
 					}
 
+					  function checkEnter(e) {
+					    e = e || window.event;
+					    if (e.keyCode == '13') {
+					        e.srcElement.blur();
+					        return false;
+					        }
+					   }
 					// ------------------------------------------
 					// Sidebar action
 					// ------------------------------------------
@@ -587,15 +716,25 @@ function createCroppingPage () {
 						// toggle clicked class
 						// set display of clicked crop to 'block', others to hidden
 						var element = e.srcElement;
-						var cropTables = document.getElementById('tabelle').childNodes
+						var cropTables = document.getElementById('tabelle').childNodes;
+						//console.log(cropTables)
 						cropTables.forEach(function (tableNode) {
 							if (tableNode.classList.contains(element.innerHTML)) {
-								tableNode.style.display = 'block'
+								tableNode.style.display = 'block';
 							}
 							else {
-								tableNode.style.display = 'none'
+								tableNode.style.display = 'none';
 							}
-						})
+						});
+						var cropInfo = document.getElementById('subseqCrops').childNodes;
+						cropInfo.forEach(function (elem) {
+							if (elem.classList.contains(element.innerHTML)) {
+								elem.style.display = 'block';
+							}
+							else {
+								elem.style.display = 'none';
+							}
+						});
 						var cropClicked = document.getElementsByTagName('h2');
 				        for (var j = 0; j < cropClicked.length; j++) {
 				            if (cropClicked[j].classList.contains('clicked')) {

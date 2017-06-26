@@ -361,7 +361,7 @@ div.flip-container {
   	padding-left: 5px;
   	border-radius: 0 !important;
 }
-
+/*
 input[type="checkbox"] {
     display:none;
 }
@@ -398,7 +398,7 @@ label {
     -ms-user-select: none;
     user-select: none;
 }
-
+*/
 .login-button {
 	position: absolute;
 	top: 50%;

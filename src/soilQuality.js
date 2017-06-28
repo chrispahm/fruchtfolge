@@ -19,7 +19,7 @@ function createSQRurl (polygon) {
 
   bboxString = reprojectionFirst.concat(reprojectionSecond).toString().replace(/,/g,'%2C')
 
-  var urlStringSQR = 'https://services.bgr.de/wms/boden/sqr1000/?&REQUEST=GetFeatureInfo&SERVICE=WMS&CRS=EPSG%3A3857&STYLES=default&TRANSPARENT=true&VERSION=1.3.0&FORMAT=image%2Fpng&BBOX=' + bboxString + '&HEIGHT=830&WIDTH=561&LAYERS=17&QUERY_LAYERS=17&INFO_FORMAT=text%2Fhtml'
+  var urlStringSQR = 'https://services.bgr.de/wms/boden/sqr1000/?&REQUEST=GetFeatureInfo&SERVICE=WMS&CRS=EPSG%3A3857&STYLES=default&TRANSPARENT=true&VERSION=1.3.0&FORMAT=image%2Fpng&BBOX=' + bboxString + '&HEIGHT=830&WIDTH=561&LAYERS=18&QUERY_LAYERS=18&INFO_FORMAT=text%2Fhtml'
 
     return urlStringSQR
 }

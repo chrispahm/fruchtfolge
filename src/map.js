@@ -334,6 +334,7 @@ map.on('draw.create', function (data) {
         // update DB
         var field = {};
         field.fieldid = data.features[0].id;
+        field.name = data.features[0].id;
         field.polygon = data.features[0];
         field.size = area;
         field.polygon.properties = {};

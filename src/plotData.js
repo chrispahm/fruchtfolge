@@ -1,4 +1,4 @@
-function plotData () {
+function plotData (callback) {
 	profile.bulkGet({
 		docs: [
 			{id: 'fields'},
@@ -8,50 +8,40 @@ function plotData () {
 		var fieldsObject = doc.results[0].docs[0].ok;
 		var fields = Object.keys(doc.results[0].docs[0].ok);
 		var info = doc.results[1].docs[0].ok;
+
 		Promise.all(fields.map(function (field) {
-			requestsPlot(field, info);
+			return requestsPlot(field, info);
 		})).then(function () {
-			console.log(fieldsObject)
+			 return profile.put(fieldsObject).then(function (response) {
+				return callback();
+			}).catch(function (err) {
+			  console.log(err);
+			});
 		});
 	
 		function requestsPlot(plot, info) {
-			return new Promise (function (resolve2, reject2) {
-				var plotObject = fieldsObject[plot]
-				var sqr = new Promise (function (resolve, reject) {
-					get(createSQRurl(plotObject.polygon))
-					.then(function (result) {
-						plotObject.quality = sqrHtmlParsing(result);
-						resolve();
-					});
-				});
-				var soilType = new Promise (function (resolve, reject) {
-					get(createSoilTypeUrl(plotObject.polygon))
-					.then(function (result) {
-						plotObject.soilType = soilTypeHtmlParsing(result);
-						resolve();
-					});
-				});
-				var distance = new Promise (function (resolve, reject) {
-					var start = turf.centerOfMass(plotObject.polygon).geometry.coordinates;
-					var end = info.homeCoords;
-					get('http://router.project-osrm.org/route/v1/driving/' + start + ';' + end + '?overview=false')
-					.then(function (result) {
-						var parsed = JSON.parse(result);
-						if (parsed.code == 'Ok') {
-							plotObject.distance = parsed.routes[0].distance / 1000;
-							resolve()
-						}
-						else {
-							plotObject.distance = '';
-							resolve()
-						}
-					});
-				});
+			var plotObject = fieldsObject[plot]
+			if (!plotObject.polygon) return
+			const sqr = get(createSQRurl(plotObject.polygon))
+			.then(sqrHtmlParsing);
 
-				Promise.all([sqr, soilType, distance]).then(function () {
-					resolve2();
-				})
-			})
-		}
+			const soilType = get(createSoilTypeUrl(plotObject.polygon))
+			.then(soilTypeHtmlParsing);
+
+			const start = turf.centerOfMass(plotObject.polygon).geometry.coordinates;
+			const end = info.homeCoords;
+			const distance = get('http://router.project-osrm.org/route/v1/driving/' + start + ';' + end + '?overview=false')
+			.then(JSON.parse);
+
+			return Promise.all([sqr, soilType, distance])
+			.then(([parsedSqr, parsedSoilType, parsedDistance]) => 
+			  Object.assign(plotObject, {
+			    quality: parsedSqr,
+			    soilType: parsedSoilType,
+			    distance: parsedDistance.code == 'Ok'
+			      ? parsedDistance.routes[0].distance / 1000
+			      : ''
+			  }))
+			}
 	});
 }

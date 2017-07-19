@@ -96,7 +96,7 @@ function createCroppingPage () {
 				var KTBLname = cropToKTBL[crop];
 				if (typeof KTBLname !== 'undefined') {
 					var id = cropObject[KTBLname].name + '/' + cropObject[KTBLname].tillage[0]
-									   + '/' + cropObject[KTBLname].yield[0]
+									   + '/' + cropObject[KTBLname].yield[0];
 					requests.docs.push({id: id})
 				}
 			});

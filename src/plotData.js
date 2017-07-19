@@ -21,7 +21,7 @@ function plotData (callback) {
 	
 		function requestsPlot(plot, info) {
 			var plotObject = fieldsObject[plot]
-			if (!plotObject.polygon) return
+			if ((plotObject.quality && plotObject.soilType && plotObject.distance) || !plotObject.polygon) return
 			const sqr = get(createSQRurl(plotObject.polygon))
 			.then(sqrHtmlParsing);
 

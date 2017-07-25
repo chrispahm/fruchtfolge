@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"> 
+	<title>Fruchtfolge</title>
+	<script src="../src/lib/pouchdb-6.2.0.js"></script>
+	<script src="../src/lib/pouchdb.authentication.min.js"></script>
+	<script src="../src/requests.js"></script>
+	<link rel="stylesheet" href="../css/page1.css" />
+</head>
+<body>
+<!--
+		Header
+-->
+
+<div class="menu">
+	<p>FRUCHTFOLGE</p>
+</div>
+
+<div id="blur"></div>
+
+<!--
+		Login Seite
+-->
+
+<input id="anmelden" class="anmelden-oben" type="button" value="ANMELDEN" onclick="flip2()"/>
+<input id="registrieren" class="registrieren-oben" type="button" value="REGISTRIEREN" onclick="flip()"/>
+
+<img id="background" class="background" src="../img/background3.jpeg" alt="Hintergrund"/>
+<div class="overlay"></div>
+
+	
+
+<div class="flip-container" id="login">
+	<div class="flipper">
+		<div class="login">
+			<p>ANBAUPLANUNG OPTIMIEREN</p>
+    <div id="emailFalsch" class="emailFalsch">Die angegebene E-Mail Adresse konnte nicht gefunden werden</div>
+			<input id= "email" class="email" placeholder="E-Mail" name="email" autofocus="autofocus"/>
+			<input class="password" onkeypress="checkEnterLogin()" placeholder="Passwort" type="password" name="password" />
+			<input class="checkbox" type="checkbox"/>
+			<input type="checkbox" id="c1" name="cc" />
+			<label for="c1"><span></span>Angemeldet bleiben</label>
+			<button type="button" class="login-button" onclick="animation_start1()">ANMELDEN</button>
+			<a class="forgot" href="index.html">Passwort vergessen?</a>
+		</div>
+		<div class="registrierung">
+			<p>JETZT KOSTENLOS ANMELDEN</p>
+			<input id='name' class="name" placeholder="Vor- und Nachname"/>
+			<input id="street" class="street" placeholder="Strasse u. Hausnr."/>
+			<input id="postcode" class="postcode" placeholder="PLZ"/>
+			<input id="email2" class="email2" placeholder="E-Mail Adresse"/>
+			<input id='password2' class="password2" placeholder="Passwort" type="password"/>
+			<input id="repeatPass" class="repeat-password" placeholder="Passwort wiederholen" type="password"/>
+			<button type="button" class="register-button" id="signup" onclick="signup">REGISTRIEREN</button>
+		</div>
+	</div>
+</div>
+
+
+
+<script type="text/javascript">
+//'http://127.0.0.1:5984'
+
+function flip(){
+	document.querySelector("#login").classList.toggle("flip");
+	document.getElementById("registrieren").style.display = 'none';
+	document.getElementById("anmelden").style.display = 'block';
+}
+
+function flip2(){
+	document.querySelector("#login").classList.toggle("flip");
+	document.getElementById("registrieren").style.display = 'block';
+	document.getElementById("anmelden").style.display = 'none';
+}
+</script>
+<script src="../src/app.js"></script>
+</body>
+</html>

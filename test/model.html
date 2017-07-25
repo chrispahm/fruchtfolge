@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Model Testing</title>
+	<meta charset="utf-8"> 
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+	<script src="../src/lib/pouchdb-6.2.0.js"></script>
+	<script src="../src/lib/pouchdb.authentication.min.js"></script>
+	<script src="../src/app.js"></script>
+	<script type="text/javascript" src="../src/gams/lstParse.js"></script>
+	<script type="text/javascript" src="../src/gams/neos.js"></script>
+	<script type="text/javascript" src="../src/gams/reformatGAMS.js"></script>
+	<script type="text/javascript" src="../src/gams/solver.js"></script>
+	<script type="text/javascript" src="../src/gmPlot2.js"></script>
+	<script type="text/javascript" src="../src/model.js"></script>
+	<script type="text/javascript" src="../src/createChart.js"></script>
+	<script src="../src/lib/Chart.bundle.min.js"></script>
+	<script src="../src/lib/spin.js"></script>
+	<script src="../src/lib/turf.min.js"></script>
+	<script src='../src/lib/mapbox-gl.js'></script>
+    <link href='../css/mapbox-gl.css' rel='stylesheet' />
+	<link rel="stylesheet" href="../css/page1.css" />
+	<link rel="stylesheet" href="../css/page2.css" />
+	<link rel="stylesheet" href="../css/page3.css" />
+</head>
+<style type="text/css">
+	#mapResults {
+		width: 100%;
+		height: 500px;
+		margin-top: 80px;
+	}
+
+
+	 h2 {
+	 	font-size: 18px;
+	 	letter-spacing: 0.2em;
+	 	font-weight: normal;
+	 	font-family: 'open_sanscondensed_light', Helvetica, Arial, sans-serif;
+	 }
+	 .legend {
+	    background-color: #fff;
+	    border-radius: 3px;
+	    top: 90px;
+	    box-shadow: 0 1px 2px rgba(0,0,0,0.10);
+	    font: 16px/20px 'open_sanscondensed_light', 'Helvetica Neue', Arial, Helvetica, sans-serif;
+	    padding: 10px;
+	    position: absolute;
+	    left: 10px;
+	    z-index: 1;
+	}
+
+	.legend h4 {
+	    margin: 0 0 10px;
+	}
+
+	.legend div span {
+	    border-radius: 50%;
+	    display: inline-block;
+	    height: 10px;
+	    margin-right: 5px;
+	    width: 10px;
+	}
+
+</style>
+<body>
+<div class="menu">
+	<p>FRUCHTFOLGE</p>
+</div>
+
+<div id="blur">
+	<p id="status"></p>	
+</div>
+
+<div id="wrapper">
+	<div id="tabelle"></div>
+	<div id="canvas-holder">
+		<canvas id="chart-area" />
+	</div>
+</div>
+
+<div id='mapResults'>
+	<h2 style="margin-left: 40px">KARTE</h2>
+	<div id='crop-legend' class='legend'>
+		<h4>Anbaukulturen</h4>
+	</div>
+</div>
+
+
+<script type="text/javascript">
+// G L O B A L E S
+var profile;
+var couchPath = 'http://127.0.0.1:5984'
+var machCombiObject;
+// remote couch at 'http://v-server-node.ilb.uni-bonn.de:5984'
+
+login('batman', 'brucewayne')
+  .then(function (response) {
+  	console.log('login')
+	profile = new PouchDB('profile')
+	profile.sync( couchPath + '/userdb-' + toHex(response.name), {
+		live: true,
+		retry: true
+	}).on('change', function (info) {
+	  // handle change
+	}).on('paused', function (err) {
+	  // replication paused (e.g. replication up to date, user went offline)
+	}).on('active', function () {
+	  // replicate resumed (e.g. new changes replicating, user went back online)
+	}).on('denied', function (err) {
+	  // a document failed to replicate (e.g. due to permissions)
+	}).on('complete', function (info) {
+	  // handle complete
+	}).on('error', function (err) {
+	  // handle error
+	});
+}).then(function () {
+	return createModel($("#status"))
+}).then(function () {
+	console.log('finished')
+})
+</script>
+</body>
+</html>

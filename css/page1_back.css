@@ -147,7 +147,7 @@ div.flip-container {
 		transform: rotateY(-180deg);
 	}
 
-.flip-container, .login {
+.flip-container, .login, .registrierung {
 	width: 300px;
 	height: 370px;
 }
@@ -177,7 +177,6 @@ div.flip-container {
 
 /* back, initially hidden pane */
 .registrierung {
-  height: 500px;
 	transform: rotateY(180deg);
 }
 
@@ -223,7 +222,7 @@ div.flip-container {
 .name {
 	position: absolute;
 	top: 50%;
-	margin-top: -134px;
+	margin-top: -86px;
 	left: 50%;
 	margin-left: -116.5px;
 	width: 233px;
@@ -238,46 +237,7 @@ div.flip-container {
   	color: grey;
   	padding-left: 5px;
   	border-radius: 0 !important;
-}
-
-.street {
-  position: absolute;
-  top: 50%;
-  margin-top: -89px;
-  left: 50%;
-  margin-left: -116.5px;
-  width: 233px;
-  height: 33px;
-  border-style: solid;
-    border-width: 1px;
-    border-color: #CCCCCC;
-    background-color: transparent;
-    font-family: 'open_sanscondensed_light', Helvetica, Arial, sans-serif;
-    letter-spacing: 0.1em;
-    font-size: 18px;
-    color: grey;
-    padding-left: 5px;
-    border-radius: 0 !important;
-}
-
-.postcode {
-  position: absolute;
-  top: 50%;
-  margin-top: -44px;
-  left: 50%;
-  margin-left: -116.5px;
-  width: 233px;
-  height: 33px;
-  border-style: solid;
-    border-width: 1px;
-    border-color: #CCCCCC;
-    background-color: transparent;
-    font-family: 'open_sanscondensed_light', Helvetica, Arial, sans-serif;
-    letter-spacing: 0.1em;
-    font-size: 18px;
-    color: grey;
-    padding-left: 5px;
-    border-radius: 0 !important;
+  	
 }
 
 .email {
@@ -325,7 +285,7 @@ div.flip-container {
 .email2 {
 	position: absolute;
 	top: 50%;
-	margin-top: -0px;
+	margin-top: -38px;
 	left: 50%;
 	margin-left: -116.5px;
 	width: 233px;
@@ -365,7 +325,7 @@ div.flip-container {
 .password2 {
 	position: absolute;
 	top: 50%;
-	margin-top: 48px;
+	margin-top: 10px;
 	width: 233px;
 	height: 33px;
 	left: 50%;
@@ -385,7 +345,7 @@ div.flip-container {
 .repeat-password {
 	position: absolute;
 	top: 50%;
-	margin-top: 96px;
+	margin-top: 58px;
 	width: 233px;
 	height: 33px;
 	left: 50%;
@@ -401,7 +361,7 @@ div.flip-container {
   	padding-left: 5px;
   	border-radius: 0 !important;
 }
-
+/*
 input[type="checkbox"] {
     display:none;
 }
@@ -438,7 +398,7 @@ label {
     -ms-user-select: none;
     user-select: none;
 }
-
+*/
 .login-button {
 	position: absolute;
 	top: 50%;
@@ -468,7 +428,7 @@ label {
 .register-button {
 	position: absolute;
 	top: 50%;
-	margin-top: 162px;
+	margin-top: 112px;
 	width: 233px;
 	height: 40px;
 	left: 50%;

@@ -1,0 +1,2 @@
+#!/bin/bash
+uglifyjs app.js constraints.js createChart.js deleteProcedure.js fileReading.js gmPlot2.js grossMargin3.js grossMarginHelpers.js map.js model.js parseElanGml.js parseElanXml.js plotData.js replaceProcedure.js requests.js soilQuality.js gams/lstParse.js gams/solver.js gams/neos.js gams/reformatGAMS.js gams/solveNEOS.js lib/ObjTree.js lib/proj4.js lib/Chart.bundle.min.js lib/turf_fruchtfolge.min.js -c -m -o ../prod/fruchtfolge.min.js

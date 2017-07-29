@@ -1,5 +1,5 @@
-function plotData (callback) {
-	profile.bulkGet({
+function plotData () {
+	return profile.bulkGet({
 		docs: [
 			{id: 'fields'},
 			{id: 'info'}
@@ -13,7 +13,7 @@ function plotData (callback) {
 			return requestsPlot(field, info);
 		})).then(function () {
 			 return profile.put(fieldsObject).then(function (response) {
-				return callback();
+				return  Promise.resolve();
 			}).catch(function (err) {
 			  console.log(err);
 			});

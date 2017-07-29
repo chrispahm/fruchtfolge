@@ -568,7 +568,7 @@ function createCroppingPage () {
 						// show/hide variable machine cost row on click
 						createRows(['Variable Maschinenkosten', '', '', sum.total.toFixed(2)], function (e) {
 							    e.__toggle = !e.__toggle;
-						        var target = e.srcElement.parentElement.nextSibling;
+						        var target = e.target.parentElement.nextSibling;
 
 						        if( target.classList.contains('hide')) {
 						            target.classList.remove('hide');
@@ -707,7 +707,7 @@ function createCroppingPage () {
 					  function checkEnter(e) {
 					    e = e || window.event;
 					    if (e.keyCode == '13') {
-					        e.srcElement.blur();
+					        e.target.blur();
 					        return false;
 					        }
 					   }
@@ -718,7 +718,7 @@ function createCroppingPage () {
 					cropHeadline.onclick = function (e) {
 						// toggle clicked class
 						// set display of clicked crop to 'block', others to hidden
-						var element = e.srcElement;
+						var element = e.target;
 						var cropTables = document.getElementById('tabelle').childNodes;
 						//console.log(cropTables)
 						cropTables.forEach(function (tableNode) {

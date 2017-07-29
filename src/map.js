@@ -1,148 +1,382 @@
-//*********************************************************
-// Section: 	Field selection
-// Purpose: 	Display map
-//				    Mapbox GL is used, including 'Draw'-Plugin
-//				    New fields are added with the Polygon tool
-//				    or the 'New Field' button
-//*********************************************************
-var language = 'de'
-mapboxgl.accessToken = 'pk.eyJ1IjoidG9mZmkiLCJhIjoiY2l3cXRnNHplMDAxcTJ6cWY1YWp5djBtOSJ9.mBYmcCSgNdaRJ1qoHW5KSQ';
+function drawCropPage() {
+  return new Promise (function (resolve, reject) {
+    profile.get('info').then(function (info) {
+      //*********************************************************
+      // Section:   Field selection
+      // Purpose:   Display map
+      //            Mapbox GL is used, including 'Draw'-Plugin
+      //            New fields are added with the Polygon tool
+      //            or the 'New Field' button
+      //*********************************************************
+      var language = 'de'
+      mapboxgl.accessToken = 'pk.eyJ1IjoidG9mZmkiLCJhIjoiY2l3cXRnNHplMDAxcTJ6cWY1YWp5djBtOSJ9.mBYmcCSgNdaRJ1qoHW5KSQ';
 
-var map = new mapboxgl.Map({
-    container: 'map',
-    style: 'mapbox://styles/mapbox/satellite-streets-v9?optimize=true',
-    center: [7.661594,51.433237],
-    zoom: 8,
-    dragPan: false,
-    dragRotate: false
-});
+      var map = new mapboxgl.Map({
+          container: 'map',
+          style: 'mapbox://styles/mapbox/satellite-streets-v9?optimize=true',
+          center: info.homeCoords,
+          zoom: 14,
+          dragPan: false,
+          dragRotate: false
+      });
 
-var Draw = new MapboxDraw({displayControlsDefault: false, controls: {
-    polygon: true, 
-    combine_features: true, 
-    trash: true},
-    styles: [
-      // ACTIVE (being drawn)
-      // line stroke
-      {
-          "id": "gl-draw-line",
-          "type": "line",
-          "filter": ["all", ["==", "$type", "LineString"], ["!=", "mode", "static"]],
-          "layout": {
-            "line-cap": "round",
-            "line-join": "round"
-          },
-          "paint": {
-            "line-color": "#ffffff",
-            "line-dasharray": [0.2, 2],
-            "line-width": 2
+      var Draw = new MapboxDraw({displayControlsDefault: false, controls: {
+          polygon: true, 
+          combine_features: true, 
+          trash: true},
+          styles: [
+            // ACTIVE (being drawn)
+            // line stroke
+            {
+                "id": "gl-draw-line",
+                "type": "line",
+                "filter": ["all", ["==", "$type", "LineString"], ["!=", "mode", "static"]],
+                "layout": {
+                  "line-cap": "round",
+                  "line-join": "round"
+                },
+                "paint": {
+                  "line-color": "#ffffff",
+                  "line-dasharray": [0.2, 2],
+                  "line-width": 2
+                }
+            },
+            // polygon fill
+            {
+              "id": "gl-draw-polygon-fill",
+              "type": "fill",
+              "filter": ["all", ["==", "$type", "Polygon"], ["!=", "mode", "static"]],
+              "paint": {
+                "fill-color": "#ffffff",
+                "fill-outline-color": "#ffffff",
+                "fill-opacity": 0
+              }
+            },
+            // polygon outline stroke
+            // This doesn't style the first edge of the polygon, which uses the line stroke styling instead
+            {
+              "id": "gl-draw-polygon-stroke-active",
+              "type": "line",
+              "filter": ["all", ["==", "$type", "Polygon"], ["!=", "mode", "static"]],
+              "layout": {
+                "line-cap": "round",
+                "line-join": "round"
+              },
+              "paint": {
+                "line-color": "#ffffff",
+                //"line-dasharray": [0.2, 2],
+                "line-width": 2
+              }
+            },
+            // vertex point halos
+            {
+              "id": "gl-draw-polygon-and-line-vertex-halo-active",
+              "type": "circle",
+              "filter": ["all", ["==", "meta", "vertex"], ["==", "$type", "Point"], ["!=", "mode", "static"]],
+              "paint": {
+                "circle-radius": 5,
+                "circle-color": "#FFF"
+              }
+            },
+            // vertex points
+            {
+              "id": "gl-draw-polygon-and-line-vertex-active",
+              "type": "circle",
+              "filter": ["all", ["==", "meta", "vertex"], ["==", "$type", "Point"], ["!=", "mode", "static"]],
+              "paint": {
+                "circle-radius": 3,
+                "circle-color": "#79ae98",
+              }
+            },
+            // midpoints
+            {
+              "id": "gl-draw-polygon-and-line-midpoint-active",
+              "type": "circle",
+              "filter": ["all", ["==", "meta", "midpoint"], ["==", "$type", "Point"], ["!=", "mode", "static"]],
+              "paint": {
+                "circle-radius": 3,
+                "circle-color": "#ffffff",
+              }
+            },
+
+            // INACTIVE (static, already drawn)
+            // line stroke
+            {
+                "id": "gl-draw-line-static",
+                "type": "line",
+                "filter": ["all", ["==", "$type", "LineString"], ["==", "mode", "static"]],
+                "layout": {
+                  "line-cap": "round",
+                  "line-join": "round"
+                },
+                "paint": {
+                  "line-color": "#ffffff",
+                  "line-width": 3
+                }
+            },
+            // polygon fill
+            {
+              "id": "gl-draw-polygon-fill-static",
+              "type": "fill",
+              "filter": ["all", ["==", "$type", "Polygon"], ["==", "mode", "static"]],
+              "paint": {
+                "fill-color": "#ffffff",
+                "fill-outline-color": "#ffffff",
+                "fill-opacity": 0.05
+              }
+            },
+            // polygon outline
+            {
+              "id": "gl-draw-polygon-stroke-static",
+              "type": "line",
+              "filter": ["all", ["==", "$type", "Polygon"], ["==", "mode", "static"]],
+              "layout": {
+                "line-cap": "round",
+                "line-join": "round"
+              },
+              "paint": {
+                "line-color": "#ffffff",
+                "line-width": 3
+              }
+            }
+          ]
+        });
+
+      map.addControl(new mapboxgl.NavigationControl(), 'bottom-left');
+      map.addControl(Draw, 'bottom-left');
+      // add new field button
+
+      //*********************************************************
+      // Section:   Field selection
+      // Purpose:   Event listeners
+      //        Check if new Polygon (field) is added, 
+      //        updated or removed and update DB 
+      //        accordingly
+      //*********************************************************
+      map.on('load', function () {
+        // Get fields from DB if any
+        // Draw fields on map
+        profile.get('fields').then(function (fields) {
+          if (fields) {
+            var totArea = 0;
+            Object.keys(fields).forEach(function (field) {
+              if (typeof fields[field].polygon !== 'undefined') {
+                fields[field].polygon.properties.id = field;
+                Draw.add(fields[field].polygon);
+                fields[field].size = calcArea(fields[field].polygon);
+                totArea += fields[field].size;
+              }
+              else {
+                  console.log('No polygon found for ' + fields[field].name)
+              }
+            });
+            // post status to status elem
+            document.getElementById('loading-status').innerHTML = 'ANBAUREGIONEN WERDEN ERFASST';
+            // get regions
+            initialRegionFinder(Draw.getAll().features, 0.4).then(function (result) {
+              var locations = result.map(locationUrl);
+              var requests = [Promise.resolve(result)];
+              locations.forEach(function (location) {
+                return requests.push(get(location).then(locationName).catch(function (err) {
+                  console.log(err)
+               }));
+              })
+              return Promise.all(requests)
+            }).then(function (result) {
+              var regions = result[0];
+              var leiste = document.getElementById('Leiste');
+              var gesamtflaecheLeiste = document.createElement('h1');
+              gesamtflaecheLeiste.innerHTML = "GESAMT " + totArea.toFixed(1) + " ha";
+              leiste.appendChild(gesamtflaecheLeiste);
+
+              regions.forEach(function (region, index) {
+                var regionDiv = document.createElement('div');
+                var regionEintrag = document.createElement('h2');
+                var regionFelderDiv = document.createElement('div');
+                regionFelderDiv.className = 'expand';
+                regionEintrag.innerHTML = result[index + 1].toUpperCase();
+
+                regions[index].forEach(function (plot) {
+                  var regionFelder = document.createElement('p');
+                  var plotName = fields[plot.properties.id].name || 'Ohne Bezeichnung';
+                  regionFelder.innerHTML = plotName + ", " + fields[plot.properties.id].size + " ha";
+                  regionFelder.id = plot.properties.id;
+                  regionFelder.onclick = function(x) {
+                      profile.get('fields').then(function (plots) {
+                        var source = x.target.id;
+                          var destination = turf.centerOfMass(plots[source].polygon);
+                          map.flyTo({center: destination.geometry.coordinates, zoom: 16});
+                          var FelderClicked = document.getElementById("Leiste").getElementsByTagName('p');
+                          for (var j = 0; j < FelderClicked.length; j++) {
+                              if (FelderClicked[j].classList.contains('geclickt')) {
+                                  FelderClicked[j].classList.remove('geclickt');
+                              }
+                          }
+                          x.target.classList.toggle("geclickt");
+                      });
+                  };
+                  regionFelder.ondblclick = function() {
+                    var ursprung = this.innerHTML;
+                    var id = this.id;
+                    if (ursprung != "<input type=\"text\">") {
+                         var text = this.innerHTML.split(',');
+                         this.innerHTML = "";
+                         var textfeld = document.createElement("INPUT");
+                         textfeld.setAttribute("type", "text");
+                         textfeld.value = text[0];
+                         this.appendChild(textfeld);
+                         textfeld.focus();
+                         textfeld.onkeypress = checkEnter;
+                         textfeld.onblur = function() {
+                            profile.get('fields').then(function (plots){
+                               if (textfeld.value == text[0]) {
+                                   document.getElementById(id).innerHTML = text[0] + ', ' + fields[id].size + ' ha';
+                                   return
+                               } else {
+                                   document.getElementById(id).innerHTML = textfeld.value + ', ' + fields[id].size + ' ha';
+                                   plots[id].name = textfeld.value;
+                                   return profile.put(plots);
+                               }
+                            })
+                         };
+                    } 
+                  };
+                  regionFelderDiv.appendChild(regionFelder);
+                  fields[plot.properties.id].region = result[index + 1];
+                });
+                regionEintrag.onclick = function() { erweitern(this); };
+
+                function erweitern(x) {
+                    x.__toggle = !x.__toggle;
+                    var target = x.nextSibling;
+
+                    if( x.__toggle) {
+                        target.style.height = target.scrollHeight+"px";
+                    }
+                    else {
+                        target.style.height = 0;
+                    }
+                }
+
+                regionDiv.appendChild(regionEintrag);
+                regionDiv.appendChild(regionFelderDiv);
+                leiste.appendChild(regionDiv);
+              });
+              map.resize();
+              return resolve(profile.put(fields))
+            })
           }
-      },
-      // polygon fill
-      {
-        "id": "gl-draw-polygon-fill",
-        "type": "fill",
-        "filter": ["all", ["==", "$type", "Polygon"], ["!=", "mode", "static"]],
-        "paint": {
-          "fill-color": "#ffffff",
-          "fill-outline-color": "#ffffff",
-          "fill-opacity": 0
-        }
-      },
-      // polygon outline stroke
-      // This doesn't style the first edge of the polygon, which uses the line stroke styling instead
-      {
-        "id": "gl-draw-polygon-stroke-active",
-        "type": "line",
-        "filter": ["all", ["==", "$type", "Polygon"], ["!=", "mode", "static"]],
-        "layout": {
-          "line-cap": "round",
-          "line-join": "round"
-        },
-        "paint": {
-          "line-color": "#ffffff",
-          //"line-dasharray": [0.2, 2],
-          "line-width": 2
-        }
-      },
-      // vertex point halos
-      {
-        "id": "gl-draw-polygon-and-line-vertex-halo-active",
-        "type": "circle",
-        "filter": ["all", ["==", "meta", "vertex"], ["==", "$type", "Point"], ["!=", "mode", "static"]],
-        "paint": {
-          "circle-radius": 5,
-          "circle-color": "#FFF"
-        }
-      },
-      // vertex points
-      {
-        "id": "gl-draw-polygon-and-line-vertex-active",
-        "type": "circle",
-        "filter": ["all", ["==", "meta", "vertex"], ["==", "$type", "Point"], ["!=", "mode", "static"]],
-        "paint": {
-          "circle-radius": 3,
-          "circle-color": "#79ae98",
-        }
-      },
-      // midpoints
-      {
-        "id": "gl-draw-polygon-and-line-midpoint-active",
-        "type": "circle",
-        "filter": ["all", ["==", "meta", "midpoint"], ["==", "$type", "Point"], ["!=", "mode", "static"]],
-        "paint": {
-          "circle-radius": 3,
-          "circle-color": "#ffffff",
-        }
-      },
+        });
+          
+        // change language according to location
+        map.setLayoutProperty('country-label-lg', 'text-field', '{name_' + language +'}');
+        map.setLayoutProperty('place-city-lg-n', 'text-field', '{name_' + language +'}');
+        map.setLayoutProperty('place-city-md-s', 'text-field', '{name_' + language +'}');
+        map.setLayoutProperty('place-city-lg-s', 'text-field', '{name_' + language +'}');
+        map.setLayoutProperty('place-city-sm', 'text-field', '{name_' + language +'}');
+        map.setLayoutProperty('place-city-md-n', 'text-field', '{name_' + language +'}');
 
-      // INACTIVE (static, already drawn)
-      // line stroke
-      {
-          "id": "gl-draw-line-static",
-          "type": "line",
-          "filter": ["all", ["==", "$type", "LineString"], ["==", "mode", "static"]],
-          "layout": {
-            "line-cap": "round",
-            "line-join": "round"
-          },
-          "paint": {
-            "line-color": "#ffffff",
-            "line-width": 3
+      });
+
+      // handle creation of new fields
+      map.on('draw.create', function (data) {
+        if (data.features.length > 0) {
+              var area = calcArea(data.features[0]);
+              // require name, fill-in previous crops
+              // update DB
+              var field = {};
+              field.fieldid = data.features[0].id;
+              field.name = prompt('Bitte geben Sie einen Name für das Feld ein', 'Ohne Bezeichnung');
+              if (field.name == "" || field.name == null) field.name = 'Ohne Bezeichnung'
+              //field.name = data.features[0].id;
+              field['2017'] = prompt('Bitte geben Sie die Vorfrucht aus der Anbauperiod 2016/2017 ein', "Winterweizen")
+              if (field['2017'] == "" || field['2017'] == null) field['2017'] = '';
+              field['2016'] = prompt('Bitte geben Sie die Vorfrucht aus der Anbauperiod 2015/2016 ein', "Winterweizen")
+              if (field['2016'] == "" || field['2016'] == null) field['2016'] = '';
+              field.polygon = data.features[0];
+              field.size = area;
+              field.polygon.properties = {};
+              field.polygon.properties.name = field.fieldid;
+
+              Draw.add(field.polygon);
+              Draw.delete(data.features[0]);
+              profile.get('fields').then(function (doc) {
+                doc[field.fieldid] = field
+                return profile.put(doc)
+              }).catch(function (err) {
+                if (err.status == 404) {
+                  var doc = {};
+                  doc[field.fieldid] = field
+                  return profile.put(doc)
+                }
+              })
           }
-      },
-      // polygon fill
-      {
-        "id": "gl-draw-polygon-fill-static",
-        "type": "fill",
-        "filter": ["all", ["==", "$type", "Polygon"], ["==", "mode", "static"]],
-        "paint": {
-          "fill-color": "#ffffff",
-          "fill-outline-color": "#ffffff",
-          "fill-opacity": 0.05
+      });
+
+      // handle updates of field geometries
+      map.on('draw.update', function (data) {
+        if (data.features.length > 0) {
+              var area = calcArea(data.features[0]);
+              // update DB
+              profile.get('fields').then(function (doc) {
+                var field = doc[data.features[0].properties.name];
+                field.polygon = data.features[0];
+                field.size = area
+                return profile.put(doc)
+              }).catch(function (err) {
+                console.log(err)
+              })
+              // display value in sidebar
+          }
+      });
+
+      // handle deletion of DBs
+      // future ToDo: put into archieve
+      map.on('draw.delete', function(data){
+        // update DB
+        profile.get('fields').then(function (doc) {
+                delete doc[data.features[0].properties.name];
+                return profile.put(doc);
+        });
+      });
+
+      // handle combination of fields
+      map.on('draw.combine', function(data){
+        if (data.deletedFeatures.length >= 2) {
+          var featuresArray = [];
+          var field = {};
+          // save field data of first deleted feature
+          profile.get('fields').then(function (doc) {
+              var field =  doc[data.deletedFeatures[0].properties.name];
+              for (var i = 0; i < data.deletedFeatures.length; i++) {
+                featuresArray.push(data.deletedFeatures[i]);
+                // remove deleted features from DB
+                delete doc[data.deletedFeatures[i].properties.name]
+              }
+              // delete "false" created combination from map
+              Draw.delete(data.createdFeatures[0].id)
+
+              // add combined feature to map
+              var union = turf.union.apply(this, featuresArray);
+              Draw.add(union)
+
+              // update DB
+              field.polygon = union;
+              doc[field.name] = field;
+              return profile.put(doc);
+          });
         }
-      },
-      // polygon outline
-      {
-        "id": "gl-draw-polygon-stroke-static",
-        "type": "line",
-        "filter": ["all", ["==", "$type", "Polygon"], ["==", "mode", "static"]],
-        "layout": {
-          "line-cap": "round",
-          "line-join": "round"
-        },
-        "paint": {
-          "line-color": "#ffffff",
-          "line-width": 3
+      });
+
+      // handle UI changes for field creation
+      map.on('draw.modechange', function (data) {
+        if (data.mode == "draw_polygon") {
+          // display 'create new field' popup
         }
-      }
-    ]
+      });
+    });
   });
-
-map.addControl(new mapboxgl.NavigationControl(), 'bottom-left');
-map.addControl(Draw, 'bottom-left');
-// add new field button
-
+}
 
 //---------------------------------------------------------
 // Name:      calcArea
@@ -154,7 +388,7 @@ function calcArea (feature) {
     var area = turf.area(feature);
     // restrict area to 2 decimal points
     var roundedAreaHa = Number((area / 10000).toFixed(2));
-    	return roundedAreaHa
+      return roundedAreaHa
 }
 
 //---------------------------------------------------------
@@ -194,43 +428,45 @@ function createBuffer (feature, size) {
 //            in km)
 // Notes:     Dependant on turf.js
 //---------------------------------------------------------
-function initialRegionFinder(fieldsFeatures, size, callback) {
-  var regionArr = []
-  var bufferFieldsArr = []
-  // create buffer polygon for each field
-  fieldsFeatures.forEach(function (field) {
-    bufferFieldsArr.push(createBuffer(field, size))
-  });
+function initialRegionFinder(fieldsFeatures, size) {
+  return new Promise (function (resolve, reject) {
+    var regionArr = []
+    var bufferFieldsArr = []
+    // create buffer polygon for each field
+    fieldsFeatures.forEach(function (field) {
+      bufferFieldsArr.push(createBuffer(field, size))
+    });
 
-  var fields = bufferFieldsArr
+    var fields = bufferFieldsArr
 
-  function findIntersections (counter) {
-    var getField = fields.pop()
-    var store = [getField]
-    regionArr[counter] = [];
-    regionArr[counter].push(getField);
-    while (store.length > 0) {
-      var storedField = store.pop()
-      for (var i = 0; i < bufferFieldsArr.length; i++) {
-        if (storedField !== bufferFieldsArr[i]) {
-          var intersection = polyIntersect(storedField,bufferFieldsArr[i])
-          if (intersection == true) {
-            var index = fields.indexOf(bufferFieldsArr[i]);
-            store.push(bufferFieldsArr[i]);
-            regionArr[counter].push(bufferFieldsArr[i]);
-            fields.splice(index, 1);
+    function findIntersections (counter) {
+      var getField = fields.pop()
+      var store = [getField]
+      regionArr[counter] = [];
+      regionArr[counter].push(getField);
+      while (store.length > 0) {
+        var storedField = store.pop()
+        for (var i = 0; i < bufferFieldsArr.length; i++) {
+          if (storedField !== bufferFieldsArr[i]) {
+            var intersection = polyIntersect(storedField,bufferFieldsArr[i])
+            if (intersection == true) {
+              var index = fields.indexOf(bufferFieldsArr[i]);
+              store.push(bufferFieldsArr[i]);
+              regionArr[counter].push(bufferFieldsArr[i]);
+              fields.splice(index, 1);
+            }
           }
         }
       }
+      if (fields.length > 0) {
+        return findIntersections (counter + 1)
+      } else {
+        return resolve(regionArr)
+      }
     }
-    if (fields.length > 0) {
-      return findIntersections (counter + 1)
-    } else {
-      return callback(regionArr)
-    }
-  }
 
-    return findIntersections(0)
+      return findIntersections(0)
+  })
 }
 
 //---------------------------------------------------------
@@ -252,197 +488,13 @@ function locationUrl (features) {
 // Args:      OSM response string (data), array to push
 //            results to
 //---------------------------------------------------------
-function locationName(data, resultArray) {
+function locationName(data) {
         var dataObject = JSON.parse(data)
         if (!(typeof dataObject.address.suburb == 'undefined')) {
-          resultArray.push(dataObject.address.suburb)
+          return dataObject.address.suburb;
         } else if (!(typeof dataObject.address.suburb == 'road')){
-          resultArray.push(dataObject.address.road)
+          return dataObject.address.road;
         } else {
-          resultArray.push(dataObject.address.city)
+          return dataObject.address.city;
         }
 }
-
-//*********************************************************
-// Section: 	Field selection
-// Purpose: 	Event listeners
-//				Check if new Polygon (field) is added, 
-//				updated or removed and update DB 
-//				accordingly
-//*********************************************************
-map.on('load', function () {
-  // Get fields from DB if any
-  // Draw fields on map
-  function drawFields (fields) {
-    Object.keys(fields).forEach(function (field) {
-      if (typeof fields[field].polygon !== 'undefined') {
-        Draw.add(fields[field].polygon)
-      }
-      else {
-          console.log('No polygon found for ' + fields[field].name)
-      }
-    });
-  }
-    
-  profile.bulkGet({
-      docs: [
-        {id: 'fields'},
-        {id: 'info'}
-      ]
-    }).then(function (doc) {
-      // both fields and cropsList exists
-      if (doc.results[0].docs[0].ok && doc.results[1].docs[0].ok) {
-        drawFields(doc.results[0].docs[0].ok);
-        map.setCenter(doc.results[1].docs[0].ok.homeCoords); 
-        map.setZoom(15);       
-      }
-      // just fields
-      else if (doc.results[0].docs[0].ok && doc.results[1].docs[0].error) {
-        drawFields(doc.results[0].docs[0].ok);
-        var center = turf.bbox(Draw.getAll());
-        map.fitBounds(center, {animate: false, padding: {top: 10, bottom:25, left: 15, right: 5}});
-      }
-      // just cropsList
-      else if (doc.results[0].docs[0].error && doc.results[1].docs[0].ok) {
-        map.setCenter(doc.results[1].docs[0].ok.homeCoords);
-        map.setZoom(15); 
-      }
-      // none
-      else {
-        //
-      }
-    }).catch(function (err) {
-      console.log(err)
-  });
-
-  // change language according to location
-  map.setLayoutProperty('country-label-lg', 'text-field', '{name_' + language +'}');
-  map.setLayoutProperty('place-city-lg-n', 'text-field', '{name_' + language +'}');
-  map.setLayoutProperty('place-city-md-s', 'text-field', '{name_' + language +'}');
-  map.setLayoutProperty('place-city-lg-s', 'text-field', '{name_' + language +'}');
-  map.setLayoutProperty('place-city-sm', 'text-field', '{name_' + language +'}');
-  map.setLayoutProperty('place-city-md-n', 'text-field', '{name_' + language +'}');
-
-    return mapLoaded()
-});
-
-// handle creation of new fields
-map.on('draw.create', function (data) {
-	if (data.features.length > 0) {
-        var area = calcArea(data.features[0]);
-        // require name, fill-in previous crops
-        // update DB
-        var field = {};
-        field.fieldid = data.features[0].id;
-        field.name = data.features[0].id;
-        field.polygon = data.features[0];
-        field.size = area;
-        field.polygon.properties = {};
-        field.polygon.properties.name = field.fieldid;
-
-        Draw.add(field.polygon);
-        Draw.delete(data.features[0]);
-        profile.get('fields').then(function (doc) {
-          doc[field.fieldid] = field
-          return profile.put(doc)
-        }).catch(function (err) {
-          if (err.status == 404) {
-            var doc = {};
-            doc[field.fieldid] = field
-            return profile.put(doc)
-          }
-        })
-        //firebase.database().ref('users/' + firebase.auth().currentUser.uid + '/fields/').child(field.fieldid).update(field);
-        // display value in sidebar
-    }
-});
-
-// handle updates of field geometries
-map.on('draw.update', function (data) {
-	if (data.features.length > 0) {
-        var area = calcArea(data.features[0]);
-        // update DB
-        //var field = {};
-        //field.polygon = data.features[0];
-        //field.size = area
-
-        profile.get('fields').then(function (doc) {
-          var field = doc[data.features[0].properties.name];
-          field.polygon = data.features[0];
-          field.size = area
-          return profile.put(doc)
-        }).catch(function (err) {
-          console.log(err)
-        })
-        //firebase.database().ref('users/' + firebase.auth().currentUser.uid + '/fields/').child(data.features[0].properties.name).update(field);
-        // display value in sidebar
-    }
-});
-
-// handle deletion of DBs
-// future ToDo: put into archieve
-map.on('draw.delete', function(data){
-	// update DB
-  //firebase.database().ref('users/' + firebase.auth().currentUser.uid + '/fields/').child(data.features[0].properties.name).remove()
-  profile.get('fields').then(function (doc) {
-          delete doc[data.features[0].properties.name];
-          return profile.put(doc);
-  });
-});
-
-// handle combination of fields
-map.on('draw.combine', function(data){
-	if (data.deletedFeatures.length >= 2) {
-    //var userPath = 'users/' + firebase.auth().currentUser.uid;
-		var featuresArray = [];
-    var field = {};
-    // save field data of first deleted feature
-    profile.get('fields').then(function (doc) {
-        var field =  doc[data.deletedFeatures[0].properties.name];
-        for (var i = 0; i < data.deletedFeatures.length; i++) {
-          featuresArray.push(data.deletedFeatures[i]);
-          // remove deleted features from DB
-          delete doc[data.deletedFeatures[i].properties.name]
-          //firebase.database().ref(userPath + '/fields/').child(data.deletedFeatures[i].properties.name).remove()
-        }
-        // delete "false" created combination from map
-        Draw.delete(data.createdFeatures[0].id)
-
-        // add combined feature to map
-        var union = turf.union.apply(this, featuresArray);
-        Draw.add(union)
-
-        // update DB
-        field.polygon = union;
-        doc[field.name] = field;
-        return profile.put(doc);
-    });
-    /*
-    firebase.database().ref(userPath + '/fields/').child(data.deletedFeatures[0].properties.name).once('value').then(function(snapshot) {
-      field = snapshot.val();
-      for (var i = 0; i < data.deletedFeatures.length; i++) {
-        featuresArray.push(data.deletedFeatures[i]);
-        // remove deleted features from DB
-        firebase.database().ref(userPath + '/fields/').child(data.deletedFeatures[i].properties.name).remove()
-      }
-      // delete "false" created combination from map
-      Draw.delete(data.createdFeatures[0].id)
-
-      // add combined feature to map
-      var union = turf.union.apply(this, featuresArray);
-      Draw.add(union)
-
-      // updated DB
-      field.polygon = union;
-      firebase.database().ref(userPath + '/fields/').child(field.fieldid).update(field);
-    });
-    */
-	}
-});
-
-// handle UI changes for field creation
-map.on('draw.modechange', function (data) {
-	if (data.mode == "draw_polygon") {
-		// display 'create new field' popup
-	}
-});

@@ -69,19 +69,29 @@
         NEOSSubmitAndWait: function (status, callback) {
 //            this.submit(function (event) { 
                 $(this).NEOSSubmit(function (sub) {
-                    status.text('Submitting');
+                    status.text('BETRIEBSMODELL WIRD VERSCHLÜSSELT UND ZUR BERECHNUNG ÜBERMITTELT');
                     if ('error' in sub) {
                         status.text(sub.error);
                         throw sub.error;
                     } else {
                         var interval = setInterval(function () {
                             NEOSResults(sub.job_number, sub.password, function (res) {
-                                status.text(res.status);
+                                //if (res.status = 'Waiting') status.text('IN WARTESCHLEIFE');
+                                //else if (res.status = 'Running') status.text('MODELL WIRD GELÖST');
+                                //status.text(res.status);
                                 if ('error' in res) {
                                     clearInterval(interval);
                                     status.text(res.error);
                                     throw res.error;
-                                } else if (res.status === 'Done') {
+                                }
+                                else if (res.status === 'Waiting') {
+                                    status.text('IN WARTESCHLEIFE');
+                                } 
+                                else if (res.status === 'Running') {
+                                    status.text('MODELL WIRD GELÖST');
+                                }
+                                else if (res.status === 'Done') {
+                                    status.text('LÖSUNG WIRD ÜBERTRAGEN')
                                     clearInterval(interval);
                                     callback(res);
                                 }

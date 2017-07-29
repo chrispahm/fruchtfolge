@@ -1,4 +1,4 @@
-function createModel(elem) {
+function createModel() {
 	return new Promise(function (resolve, reject) {
 		Promise.all([gmPlot(), profile.bulkGet({
 				docs: [
@@ -9,6 +9,7 @@ function createModel(elem) {
 			// --------------------------
 			// create table and pie chart
 			// --------------------------
+			var elem = $("#loading-status");
 			var gmPlot = response[0][0];
 			var gmPlotAll = response[0][1];
 			var fields = response[1].results[0].docs[0].ok;
@@ -162,10 +163,13 @@ function createModel(elem) {
 			var crops = res[7];
 			var gmPlotAll =res[8];
 
-			var tableDiv = document.getElementById("tabelle");
+			var tableDiv = document.getElementById("tabelle-results");
 		    var table = document.createElement('TABLE');
 		    var tableHead = document.createElement('THEAD');
 		    var tableBody = document.createElement('TBODY');
+		    table.className = 'resultsTable';
+		    tableHead.className = 'resultsTableHead';
+		    tableBody.className = 'resultsTableBody';
 
 		    table.appendChild(tableHead);
 		    table.appendChild(tableBody);
@@ -185,9 +189,10 @@ function createModel(elem) {
 		    // create columns
 		    var tr = document.createElement('TR');
     		tableHead.appendChild(tr);
-    		headRow.forEach(function (cell) { 
+    		headRow.forEach(function (cell, index) { 
     			var th = document.createElement('TH');
     			th.appendChild(document.createTextNode(cell));
+    			if (index === 0) th.style.width = '180px';
     			tr.appendChild(th);
     		});
 
@@ -199,12 +204,12 @@ function createModel(elem) {
 	    			if (fields[plot].name) createTD(fields[plot].name, tr);
 	    			else createTD('Ohne Bezeichnung', tr);
 
-	    			createTD(fields[plot].size, tr);
-	    			createTD(parseFloat(fields[plot].distance).toFixed(1), tr);
+	    			createTD(fields[plot].size, tr, 'center');
+	    			createTD(parseFloat(fields[plot].distance).toFixed(1), tr, 'center');
 	    			//createTD(fields[plot]['2016']);
-	    			createTD(fields[plot]['2017'], tr);
-	    			if (cropAlloc[plot]) createTD(cropAlloc[plot].crop, tr);
-	    			else createTD('', tr)
+	    			createTD(fields[plot]['2017'], tr, 'center');
+	    			if (cropAlloc[plot]) createTD(cropAlloc[plot].crop, tr, 'center');
+	    			else createTD('', tr, 'center')
 
 	    			tableBody.appendChild(tr);
     			}
@@ -212,16 +217,16 @@ function createModel(elem) {
     		// create sum row
     		var trSum = document.createElement('TR');
     		createTD('Summe', trSum);
-    		createTD('', trSum);
-    		createTD(sumHa.toFixed(1), trSum);
+    		createTD('', trSum, 'center');
+    		createTD(sumHa.toFixed(1), trSum, 'center');
     		// total GM of previous year
     		createTD((function () {
     			var gm = 0;
     			Object.keys(fields).forEach(function (plot) {
-    				if (fields[plot]['2016']) gm += gmPlotAll[plot][fields[plot]['2016']].gmTot;
+    				if (fields[plot]['2016'] && crops[fields[plot]['2016']]) gm += gmPlotAll[plot][fields[plot]['2016']].gmTot;
     			});
     			return gm.toFixed(1);
-    		})(), trSum);
+    		})(), trSum, 'center');
     		// total GM of this year
     		createTD((function () {
     			var gm = 0;
@@ -229,15 +234,15 @@ function createModel(elem) {
     				if (cropAlloc[plot]) gm += cropAlloc[plot][cropAlloc[plot].crop];
     			});
     			return gm.toFixed(1);
-    		})(), trSum);
+    		})(), trSum, 'center');
 
     		tableBody.appendChild(trSum);
     		tableDiv.appendChild(table);
 
     		var cropColor = createChart(cropSum);
 
-		    var spalte0 = document.getElementById("tabelle").getElementsByTagName("table")[0].rows[0].cells
-		    var spalte1 = document.getElementById("tabelle").getElementsByTagName("table")[0].rows
+		    var spalte0 = document.getElementById("tabelle-results").getElementsByTagName("table")[0].rows[0].cells
+		    var spalte1 = document.getElementById("tabelle-results").getElementsByTagName("table")[0].rows
 		    for (var i = 1; i < spalte1.length; i++) {
 		    	var cells = spalte1[i].cells
 		    	for (j=0; j < spalte0.length; j++) {
@@ -251,10 +256,13 @@ function createModel(elem) {
 						 profile.get('info'),
 						 Promise.resolve(cropColor)]);
 
-		    function createTD (input, tr) {
+		    function createTD (input, tr, align) {
     				if (!input) var input = ''
     				var td = document.createElement('TD');
 		            td.appendChild(document.createTextNode(input));
+		            td.style.display = 'inline-block';
+		            td.style.wordBreak = 'break-word';
+		            if (align) td.style.textAlign = align;
 		            tr.appendChild(td);
 		            //td.ondblclick = function() { bearbeiten(this); };
 	    	}
@@ -272,14 +280,15 @@ function createModel(elem) {
 			    container: 'mapResults',
 			    //style: 'mapbox://styles/mapbox/satellite-streets-v9?optimize=true',
 			    // mapbox://styles/toffi/cj5gxt7ug3o542rph58zh8v40
-			    style: 'mapbox://styles/toffi/cj5i5it2z4s5p2rmo8rsvdypm',
+			    //mapbox://styles/toffi/cj5i5it2z4s5p2rmo8rsvdypm
+			    style: 'mapbox://styles/toffi/cj5gy0lop2wqb2tuk7epjfol9',
 			    center: info.homeCoords,
 			    zoom: 13,
 			    //dragPan: false,
 			    dragRotate: false
 			});
 			map.addControl(new mapboxgl.NavigationControl(), 'bottom-left');
-			console.log(cropColor)
+			//console.log(cropColor)
 			// ields[plot].name || p
 			map.on('load', function () {
 				var featureCollection = [];
@@ -365,8 +374,8 @@ function createModel(elem) {
 			    });
 			    //var center = turf.bbox(collectionObject.data)
 			    //map.fitBounds(center, {animate: false, padding: {top: 10, bottom:25, left: 15, right: 5}});
-				
-	
+				// map loaded
+				resolve();
 			})
 			
 		}).catch(console.log.bind(console));

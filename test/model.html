@@ -6,7 +6,6 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 	<script src="../src/lib/pouchdb-6.2.0.js"></script>
 	<script src="../src/lib/pouchdb.authentication.min.js"></script>
-	<script src="../src/app.js"></script>
 	<script type="text/javascript" src="../src/gams/lstParse.js"></script>
 	<script type="text/javascript" src="../src/gams/neos.js"></script>
 	<script type="text/javascript" src="../src/gams/reformatGAMS.js"></script>
@@ -72,7 +71,7 @@
 </div>
 
 <div id="wrapper">
-	<div id="tabelle"></div>
+	<div id="tabelle-results"></div>
 	<div id="canvas-holder">
 		<canvas id="chart-area" />
 	</div>
@@ -92,8 +91,8 @@ var profile;
 var couchPath = 'http://127.0.0.1:5984'
 var machCombiObject;
 // remote couch at 'http://v-server-node.ilb.uni-bonn.de:5984'
-
-login('batman', 'brucewayne')
+var db = new PouchDB(couchPath + '/users', {skip_setup: true});
+db.login('batman', 'brucewayne')
   .then(function (response) {
   	console.log('login')
 	profile = new PouchDB('profile')
@@ -114,10 +113,11 @@ login('batman', 'brucewayne')
 	  // handle error
 	});
 }).then(function () {
-	return createModel($("#status"))
+	return createModel()
 }).then(function () {
 	console.log('finished')
 })
 </script>
+<script src="../src/app.js"></script>
 </body>
 </html>

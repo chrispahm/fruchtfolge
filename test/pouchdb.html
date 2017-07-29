@@ -23,6 +23,11 @@
 	opacity: 0.95;
 	visibility: visible;
  }
+ #stepProcedures {
+ 	position: absolute;
+    width: calc(100vw - 250px);
+    top: 70px;
+ }
  #replacementBox {
  	position: fixed;
  	width: 400px;
@@ -166,10 +171,18 @@
  }
 
  #subseqCrops {
- 	position: relative;
- 	width: 200px;
- 	top: 50px;
- 	left: 50px;
+ 	width: calc((100vw - 310px)/2);
+    margin-top: 20px;
+    margin-left: 20px;
+    display: -webkit-inline-box;
+ }
+
+  #subseqCropsRight {
+ 	width: calc((100vw - 310px)/2);
+ 	vertical-align: top;
+    margin-top: 60px;
+    margin-left: 20px;
+    display: -webkit-inline-box;
  }
 
  h2 {
@@ -222,6 +235,7 @@
 		<button id="buttonCancel">ABBRECHEN</button>
 	</div>
 	<div id='subseqCrops'></div>
+	<div id='subseqCropsRight'></div>
 </div>
 <div id="LeisteCrops"></div>
 

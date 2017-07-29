@@ -127,7 +127,7 @@ function replaceProcedure (e) {
 
 	// show replacement box popup window
 	var box = document.getElementById('replacementBox');
-	var blur = document.getElementById('blur');
+	var blur = document.getElementById('blur-costs');
 	box.classList.remove('hide');
 	blur.classList.remove('hide');
 

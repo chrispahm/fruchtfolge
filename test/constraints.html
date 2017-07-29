@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"> 
+  <title>Fruchtfolge</title>
+  <meta name="description" content="Fruchtfolge Optimierung">
+    <meta name="author" content="Christoph Pahmeyer">
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src="../src/lib/pouchdb-6.2.0.js"></script>
+    <script src="../src/lib/pouchdb.authentication.min.js"></script>
+    <link rel="stylesheet" href="../css/page1.css" />
+    <link rel="stylesheet" href="../css/page2.css" />
+    <link rel="stylesheet" href="../css/page3_back.css" />
+</head>
+<style type="text/css">
+body {
+  border: 0px;
+  margin: 0px;
+}
+
+#map {
+  position: absolute;
+  top: 70px;
+  width: calc(100vw - 350px);
+  height: calc(100vh - 70px);
+}
+  #blur-costs {
+  opacity: 0.95;
+  visibility: visible;
+ }
+ #stepProcedures {
+  position: absolute;
+    width: calc(100vw - 250px);
+    top: 70px;
+ }
+ #replacementBox {
+  position: fixed;
+  width: 400px;
+  height: 500px;
+  top: 50%;
+  margin-top: -250px;
+  left: 50%;
+  margin-left: -200px;
+  background-color: white;
+  border: 1px solid;
+  border-color: #CCCCCC;
+  z-index: 99;
+ }
+
+#machInputs {
+  width: 320px;
+  position: relative;
+  left: 50%;
+  top: 30px;
+  margin-left: -160px;
+
+}
+
+ .labelDropDown {
+  position: relative;
+  left: 0px;
+  margin-left: 0px;
+  display: inline-block;
+  margin-top: 0px;
+  top: 0px;
+  margin-bottom: 5px;
+ }
+
+ .replacementDropDown {
+  margin-bottom: 15px;
+  width: 320px;
+  height: 33px;
+  -webkit-appearance: none;
+    -webkit-border-radius: 0px;
+    background: url("data:image/svg+xml;utf8,<svg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='24' height='24' viewBox='0 0 24 24'><path fill='#444' d='M7.406 7.828l4.594 4.594 4.594-4.594 1.406 1.406-6 6-6-6z'></path></svg>");
+    background-position: 100% 50%;
+    background-repeat: no-repeat;
+    font-family: 'open_sanscondensed_light', Helvetica, Arial, sans-serif;
+    letter-spacing: 0.1em;
+    padding-left: 5px;
+    padding-right: 25px;
+    font-size: 14px;
+ }
+
+ .monthDropDown {
+  border:0px;
+    outline:0px;
+    -webkit-appearance: none;
+    -webkit-border-radius: 0px;
+    font-family: 'open_sanscondensed_light', Helvetica, Arial, sans-serif;
+    font-size: 14px;
+ }
+
+ .buttonOk {
+  position: absolute;
+  bottom: 35px;
+  left: 45px;
+  height: 40px;
+  width: 130px;
+  border-style: solid;
+    border-width: 1px;
+    border-color: black;
+    background-color: transparent;
+    font-family: 'open_sanscondensed_light', Helvetica, Arial, sans-serif;
+    letter-spacing: 0.1em;
+    font-size: 14px;
+    color: black;
+    padding: 5px;
+    border-radius: 0px !important;
+ }
+
+ .buttonOk:hover {
+  background-color: #79ae98;
+  color: white;
+ }
+
+  .buttonOk:active {
+  background-color: #679481;
+  color: white;
+ }
+
+ .buttonCancel {
+  position: absolute;
+  bottom: 35px;
+  right: 45px;
+  height: 40px;
+  width: 130px;
+  border-style: solid;
+    border-width: 1px;
+    border-color: black;
+    background-color: transparent;
+    font-family: 'open_sanscondensed_light', Helvetica, Arial, sans-serif;
+    letter-spacing: 0.1em;
+    font-size: 14px;
+    color: black;
+    padding: 5px;
+    border-radius: 0px !important;
+ }
+
+ .buttonCancel:hover {
+  background-color: rgba(0,0,0,0.05)
+ }
+
+  .buttonCancel:active {
+  background-color: rgba(0,0,0,0.2)
+ }
+
+ .deleteButton {
+  background: #F5F5F5;
+ }
+
+ .deleteHover {
+  visibility: hidden;
+  height: 28px;
+ }
+
+ .deleteHover:hover path {
+  fill: black;
+ }
+  .deleteButton:hover .deleteHover {
+  visibility: visible;
+ }
+
+ .insertBefore {
+  visibility: hidden;
+  height: 25px;
+  margin-left: -25px;
+ } 
+
+ .insertBefore:hover polygon, .insertBefore:hover path {
+  fill: black;
+ }
+
+ .insertBeforeButton:hover .insertBefore {
+  visibility: visible;
+ }
+
+ #subseqCrops {
+  width: calc((100vw - 310px)/2);
+    margin-top: 20px;
+    margin-left: 20px;
+    display: -webkit-inline-box;
+ }
+
+  #subseqCropsRight {
+  width: calc((100vw - 310px)/2);
+  vertical-align: top;
+    margin-top: 60px;
+    margin-left: 20px;
+    display: -webkit-inline-box;
+ }
+
+ h2 {
+  font-size: 18px;
+  letter-spacing: 0.2em;
+  font-weight: normal;
+ }
+ .hide {
+   display: none; 
+}
+
+#addConstraint {
+  position: fixed;
+  overflow: scroll;
+  width: 400px;
+  height: 500px;
+  top: 50%;
+  margin-top: -250px;
+  left: 50%;
+  margin-left: -200px;
+  background-color: white;
+  border: 1px solid;
+  border-color: #CCCCCC;
+  z-index: 99;
+}
+
+#constraintInputs {
+  width: 320px;
+  position: relative;
+  left: 50%;
+  top: 30px;
+  margin-left: -160px;
+}
+
+ .constAmountInput {
+  margin-bottom: 15px;
+  width: 310px;
+  height: 30px;
+  font-family: 'open_sanscondensed_light', Helvetica, Arial, sans-serif;
+  letter-spacing: 0.1em;
+  padding-left: 5px;
+  font-size: 14px;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #A6A6A6;
+  background-color: transparent;
+ }
+
+ #addCrop {
+    padding: 0px;
+    position: relative;
+    margin-left: 143.5px;
+    margin-bottom: 15px;
+    width: 33px;
+    height: 33px;
+    background: transparent;
+    border: none;
+    margin-right: 143.5px;
+    background-image: url(../img/add.svg), none;
+    background-size:     cover;
+    background-repeat:   no-repeat;
+    background-position: center center;  
+ }
+
+ #addCrop svg {
+   width: 33px;
+   height: 33px;
+ }
+
+ .buttonConstOk {
+    position: relative;
+    top: 77px;
+    left: 45px;
+    height: 40px;
+    width: 130px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: black;
+    background-color: transparent;
+    font-family: 'open_sanscondensed_light', Helvetica, Arial, sans-serif;
+    letter-spacing: 0.1em;
+    font-size: 14px;
+    color: black;
+    padding: 5px;
+    border-radius: 0px !important;
+    margin-bottom: 40px;
+ }
+
+ .buttonConstOk:hover {
+  background-color: #79ae98;
+  color: white;
+ }
+
+  .buttonConstOk:active {
+  background-color: #679481;
+  color: white;
+ }
+ .buttonConstCancel {
+    position: relative;
+    top: 77px;
+    right: -90px;
+    height: 40px;
+    width: 130px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: black;
+    background-color: transparent;
+    font-family: 'open_sanscondensed_light', Helvetica, Arial, sans-serif;
+    letter-spacing: 0.1em;
+    font-size: 14px;
+    color: black;
+    padding: 5px;
+    border-radius: 0px !important;
+    margin-bottom: 40px;
+ }
+
+  .buttonConstCancel:hover {
+  background-color: rgba(0,0,0,0.05)
+ }
+
+  .buttonConstCancel:active {
+  background-color: rgba(0,0,0,0.2)
+ }
+  .invekosBtn:hover {
+  background-color: rgba(0,0,0,0.05)
+}
+
+.invekosBtn:active {
+    vertical-align: top;
+    padding-top: 6px;
+    background-color: rgba(0,0,0,0.2)
+}
+</style>
+<body>
+<!--
+    Header
+-->
+
+<div class="menu">
+  <p>FRUCHTFOLGE</p>
+</div>
+
+<div page='5'>
+  <div class="hide" id="blur-const"></div>
+  <div class="hide" id='addConstraint'>
+    <div id='constraintInputs'>
+    <h2 style="text-align: center;">NEUE NEBENBEDINGUNG HINZUFÜGEN</h2>
+      <label class='labelDropDown' for='constraint.crop'>Kultur</label>
+      <select class='replacementDropDown' id="constraint.crop"></select>
+
+      <button id='addCrop'></button>
+      <label class='labelDropDown' for='constraint.type'>Bedingung</label>
+      <select class='replacementDropDown' id="constraint.type">
+        <option selected="">maximal</option>
+        <option selected="">mindestens</option>
+      </select>
+
+      <label class='labelDropDown' for='constraint.amount'>Anbaufläche in ha</label>
+      <input type="text" class='constAmountInput' pattern="[0-9]" id="constraint.amount">
+    </div>
+    <button id="buttonConstOk" class='buttonConstOk'>ÜBERNEHMEN</button>
+    <button id="buttonConstCancel" class="buttonConstCancel">ABBRECHEN</button>
+  </div>
+  <div id='containerConst' style="width: 50vw; position: absolute; top: 120px; left: 50%; margin-left: -25vw">
+    <h1 style="font-family: 'open_sanscondensed_light'; font-weight: normal; letter-spacing: 0.2em">NEBENBEDINGUNGEN</h1>
+    <table id='tableConst'></table>
+  </div>
+  <input id="weiter-const" class="weiter-oben" type="button" value="WEITER" />
+  <script type="text/javascript">
+    document.getElementById('weiter-const').onclick = function() {
+      return loadingScreen(dirtyHack, 5, 'weiter-costs',null, "EINEN AUGENBLICK BITTE")
+    };
+    </script>
+</div>
+
+<script src="../src/app.js"></script>
+<script type="text/javascript">
+// G L O B A L E S
+//var profile;
+var couchPath = 'http://v-server-node.ilb.uni-bonn.de:5984';
+var db = new PouchDB(couchPath + '/users', {skip_setup: true});
+// remote couch at 'http://v-server-node.ilb.uni-bonn.de:5984'
+
+
+db.login('batman', 'brucewayne')
+  .then(function (response) {
+    console.log('login')
+  profile = new PouchDB('profile')
+  profile.sync(couchPath + '/userdb-' + toHex(response.name), {
+    live: true,
+    retry: true
+  }).on('change', function (info) {
+    // handle change
+  }).on('paused', function (err) {
+    // replication paused (e.g. replication up to date, user went offline)
+  }).on('active', function () {
+    // replicate resumed (e.g. new changes replicating, user went back online)
+  }).on('denied', function (err) {
+    // a document failed to replicate (e.g. due to permissions)
+  }).on('complete', function (info) {
+    // handle complete
+  }).on('error', function (err) {
+    // handle error
+  });
+}).then(function () {
+  console.log("loaded")
+  // go to overview page - here maps
+  //      var tag = document.createElement("script");
+  //      tag.src = "../src/map.js";
+  //      document.getElementsByTagName("head")[0].appendChild(tag);
+  return constraints()
+}).then(function () {
+
+})
+</script>
+<script src="../src/constraints.js"></script>
+</body>
+</html>

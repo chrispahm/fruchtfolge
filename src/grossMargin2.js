@@ -59,9 +59,7 @@ function createCroppingPage () {
 			// If none
 				resolve(null)
 			}
-		}).catch(function (err) {
-			reject(err)
-		})
+		}).catch(console.log.bind(console));
 	}).then(function (crops) {
 		return new Promise (function (resolve, reject) {
 			if (!crops) {
@@ -77,9 +75,7 @@ function createCroppingPage () {
 				}).then(function (doc) {
 					var value = {a: doc, b: crops}
 					resolve(value)
-				}).catch(function (err) {
-					console.log(err)
-				})
+				}).catch(console.log.bind(console));
 		})
 	}).then(function (value) {
 		return new Promise (function (resolve, reject) {
@@ -135,7 +131,7 @@ function createCroppingPage () {
 					profile.put(data).then(function () {
 						resolve()
 					})
-				});						
+				}).catch(console.log.bind(console));						
 			}
 
 			profile.get('crops').then(function (data) {
@@ -209,7 +205,7 @@ function createCroppingPage () {
 			db.get('machCombiObject').then(function (doc) {
 				machCombiObject = doc;
 				resolve()
-			})
+			}).catch(console.log.bind(console));
 		})
 	}).then(function () {
 		profile.get('crops').then(function (doc) {
@@ -572,7 +568,7 @@ function createCroppingPage () {
 						// show/hide variable machine cost row on click
 						createRows(['Variable Maschinenkosten', '', '', sum.total.toFixed(2)], function (e) {
 							    e.__toggle = !e.__toggle;
-						        var target = e.srcElement.parentElement.nextSibling;
+						        var target = e.target.parentElement.nextSibling;
 
 						        if( target.classList.contains('hide')) {
 						            target.classList.remove('hide');
@@ -634,13 +630,16 @@ function createCroppingPage () {
 					var subseqCropsDiv = document.getElementById('subseqCrops');
 					subseqCropsDiv.appendChild(container);
 
+					// push the following to the bottom right of the page
+					var containerRight = document.createElement('div');
+				    containerRight.classList.toggle(item.toUpperCase());
 					// set rotational break time
 					var rotBreak = document.createElement('h2');
 				    	rotBreak.innerHTML = 'ANBAUPAUSE IN JAHREN: ' +  doc[item].rotBreak;
 				    	rotBreak.ondblclick = function () {
 				    		bearbeiten(this,'rotBreak');
 				    	}
-				    container.appendChild(rotBreak);
+				    containerRight.appendChild(rotBreak);
 
 				    // set max rotational share
 				    var maxShare = document.createElement('h2');
@@ -648,7 +647,9 @@ function createCroppingPage () {
 				    	maxShare.ondblclick = function () {
 				    		bearbeiten(this, 'maxShare');
 				    	}
-				    container.appendChild(maxShare);
+				    containerRight.appendChild(maxShare);
+				    var subseqCropsRightDiv = document.getElementById('subseqCropsRight');
+					subseqCropsRightDiv.appendChild(containerRight);
 
 				    // create crop names in sidebar
 					var cropHeadline = document.createElement('h2');
@@ -658,11 +659,13 @@ function createCroppingPage () {
 					if (index == 0) {
 						table.style.display = 'block';
 						container.style.display = 'block';
+						containerRight.style.display = 'block';
 						cropHeadline.classList.toggle('clicked');
 					}
 					else {
 						table.style.display = 'none'
 						container.style.display = 'none';
+						containerRight.style.display = 'none';
 					}
 					// handle changes in dom
 
@@ -704,7 +707,7 @@ function createCroppingPage () {
 					  function checkEnter(e) {
 					    e = e || window.event;
 					    if (e.keyCode == '13') {
-					        e.srcElement.blur();
+					        e.target.blur();
 					        return false;
 					        }
 					   }
@@ -715,7 +718,7 @@ function createCroppingPage () {
 					cropHeadline.onclick = function (e) {
 						// toggle clicked class
 						// set display of clicked crop to 'block', others to hidden
-						var element = e.srcElement;
+						var element = e.target;
 						var cropTables = document.getElementById('tabelle').childNodes;
 						//console.log(cropTables)
 						cropTables.forEach(function (tableNode) {
@@ -728,6 +731,15 @@ function createCroppingPage () {
 						});
 						var cropInfo = document.getElementById('subseqCrops').childNodes;
 						cropInfo.forEach(function (elem) {
+							if (elem.classList.contains(element.innerHTML)) {
+								elem.style.display = 'block';
+							}
+							else {
+								elem.style.display = 'none';
+							}
+						});
+						var cropInfo2 = document.getElementById('subseqCropsRight').childNodes;
+						cropInfo2.forEach(function (elem) {
 							if (elem.classList.contains(element.innerHTML)) {
 								elem.style.display = 'block';
 							}

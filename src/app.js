@@ -93,6 +93,8 @@ function signup() {
 					  	'street': userdata.street,
 					  	'postcode': userdata.postcode
 				  }).then(function () {
+				  	// show navMenu after succesful login
+					hideMenu(false);
 				  	resolve();
 				  });
 				});
@@ -141,6 +143,8 @@ function login () {
 			}).on('error', function (err) {
 			  // handle error
 			});
+			// show navMenu after succesful response
+			hideMenu(false);
 		  resolve(response)
 		})
 	})
@@ -177,6 +181,12 @@ function loadingScreen(func1, step, button, PromiseArr, status) {
 			    	target.className = "blur-overlay";
 			    	spinner.stop();
 			    }, 700)
+			    if (func1 !== 'dirtyHack' && step !== 1) {
+					profile.get('info').then(function (info) {
+						info.status = step;
+						return profile.put(info);
+					});
+				};
 		    }).catch(function (err) {
 		    	alert(err);
 		    	goTo(1);
@@ -192,14 +202,20 @@ function loadingScreen(func1, step, button, PromiseArr, status) {
 			    setTimeout(function () {
 			    	target.className = "blur-overlay";
 			    	spinner.stop();
-			    }, 700)
+			    }, 700);
+			    if (func1 !== 'dirtyHack' && step !== 1) {
+					profile.get('info').then(function (info) {
+						info.status = step;
+						return profile.put(info);
+					});
+				};
 		    }).catch(function (err) {
 		    	alert(err);
 		    	goTo(1);
 		    	target.style.opacity = 0;
 		    });
     	}
-	}, 2000);
+	}, 1000);
 }
 
 function logout() {
@@ -208,6 +224,7 @@ function logout() {
 	  if (err) {
 	    // network error
 	  }
+	  hideMenu(true);
 	  goTo(1);
 	})
 }

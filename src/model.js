@@ -1,9 +1,12 @@
 function createModel() {
 	return new Promise(function (resolve, reject) {
+		// recreate initial html state
+		document.getElementById('page6').innerHTML = "<div id='wrapper'> <div id='tabelle-results'></div> <div id='canvas-holder'> <canvas id='chart-area' /> </div> </div> <div id='mapResults'> <h2 style='margin-left: 40px'>KARTE</h2> <div id='crop-legend' class='legend'> <h4>Anbaukulturen</h4> </div> </div>";
 		Promise.all([gmPlot(), profile.bulkGet({
 				docs: [
 					{id: 'fields'},
-					{id: 'crops'}
+					{id: 'crops'},
+					{id: 'constraints'}
 				]
 		})]).then(function (response) {
 			// --------------------------
@@ -14,7 +17,7 @@ function createModel() {
 			var gmPlotAll = response[0][1];
 			var fields = response[1].results[0].docs[0].ok;
 			var crops = response[1].results[1].docs[0].ok;
-			// var restrictions = response[1].results[2].docs[0].ok;
+			var constraints = response[1].results[2].docs[0].ok;
 			
 			// get total ha size
           	var totalHa = 0;
@@ -46,6 +49,14 @@ function createModel() {
 	            "ints": {},
 	            "binaries": {}
           	}
+          	// ----------------------------------
+          	// add constraints
+          	// ----------------------------------
+          	
+          	// ----------------------------------
+          	// create model
+          	// ----------------------------------
+
           	var assign = {};
           	// create basic model with all crop options per plot. Only 1 crop possible per plot
           	Object.keys(gmPlot).forEach(function (plot, indexPlot) {

@@ -1,5 +1,8 @@
 function constraints() {
 	return new Promise (function (resolve, reject) {
+		// recreate initial html state
+		document.getElementById('page5').innerHTML = "<div class='hide' id='blur-const'></div> <div class='hide' id='addConstraint'> <div id='constraintInputs'> <h2 style='text-align: center;'>NEUE NEBENBEDINGUNG HINZUFÜGEN</h2> <label class='labelDropDown' for='constraint.crop'>Kultur</label> <select class='replacementDropDown' id='constraint.crop'></select> <button id='addCrop'></button> <label class='labelDropDown' for='constraint.type'>Bedingung</label> <select class='replacementDropDown' id='constraint.type'> <option selected>maximal</option> <option >mindestens</option> </select> <label class='labelDropDown' for='constraint.amount'>Anbaufläche in ha</label> <input type='text' class='constAmountInput' pattern='[0-9]' id='constraint.amount'> </div> <button id='buttonConstOk' class='buttonConstOk'>ÜBERNEHMEN</button> <button id='buttonConstCancel' class='buttonConstCancel'>ABBRECHEN</button> </div> <div id='containerConst' style='width: 50vw; position: absolute; top: 120px; left: 50%; margin-left: -25vw'> <h1 style='font-family: \"open_sanscondensed_light\"; font-weight: normal; letter-spacing: 0.2em'>NEBENBEDINGUNGEN</h1> <table id='tableConst'></table> </div> <input id='weiter-const' class='weiter-oben' type='button' value='WEITER' />"
+		document.getElementById('weiter-const').onclick = function() {return loadingScreen(createModel, 6, 'weiter-costs',null, 'EINEN AUGENBLICK BITTE') };
 		profile.bulkGet({
 			docs: [
 				{id: 'crops'},

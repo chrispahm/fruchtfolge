@@ -1,6 +1,9 @@
 function drawCropPage() {
   return new Promise (function (resolve, reject) {
     profile.get('info').then(function (info) {
+      // restore default innerHTML
+      document.getElementById('page3').innerHTML = "<div id='Leiste'></div> <div id='map'></div> <input id='weiter-map' class='weiter-oben' type='button' value='WEITER' /> <script type='text/javascript'> document.getElementById('weiter-map').onclick = function() {return loadingScreen(null, 4, 'weiter-map', [plotData,createCroppingPage], 'DISTANZEN UND BODENQUALITÄTEN WERDEN ABGEFRAGT') }; </script>"
+      document.getElementById('weiter-map').onclick = function() {return loadingScreen(null, 4, 'weiter-map', [plotData,createCroppingPage], 'DISTANZEN UND BODENQUALITÄTEN WERDEN ABGEFRAGT') };
       //*********************************************************
       // Section:   Field selection
       // Purpose:   Display map
@@ -160,7 +163,8 @@ function drawCropPage() {
           if (fields) {
             var totArea = 0;
             Object.keys(fields).forEach(function (field) {
-              if (typeof fields[field].polygon !== 'undefined') {
+              if (field === '_rev' || field === '_id') return
+              else if (typeof fields[field].polygon !== 'undefined') {
                 fields[field].polygon.properties.id = field;
                 Draw.add(fields[field].polygon);
                 fields[field].size = calcArea(fields[field].polygon);
@@ -477,7 +481,8 @@ function initialRegionFinder(fieldsFeatures, size) {
 // Notes:     Dependant on turf.js
 //---------------------------------------------------------
 function locationUrl (features) {
-  var url = 'https://nominatim.openstreetmap.org/reverse?lat=' + turf.centerOfMass(turf.featureCollection(features)).geometry.coordinates[1] + '&lon=' + turf.centerOfMass(turf.featureCollection(features)).geometry.coordinates[0] + '&format=json'; 
+  var url = 'http://open.mapquestapi.com/geocoding/v1/reverse?key=eoEN8KRKeFAMe9JR8UG53yw5Gh3XU9Ex&location=' + turf.centerOfMass(turf.featureCollection(features)).geometry.coordinates[1] + ',' + turf.centerOfMass(turf.featureCollection(features)).geometry.coordinates[0];
+  //var url = 'https://nominatim.openstreetmap.org/reverse?lat=' + turf.centerOfMass(turf.featureCollection(features)).geometry.coordinates[1] + '&lon=' + turf.centerOfMass(turf.featureCollection(features)).geometry.coordinates[0] + '&format=json'; 
       return url
 }
 
@@ -490,11 +495,19 @@ function locationUrl (features) {
 //---------------------------------------------------------
 function locationName(data) {
         var dataObject = JSON.parse(data)
+        /* OSM Version
         if (!(typeof dataObject.address.suburb == 'undefined')) {
           return dataObject.address.suburb;
         } else if (!(typeof dataObject.address.suburb == 'road')){
           return dataObject.address.road;
         } else {
           return dataObject.address.city;
+        } */
+        if (!dataObject.results[0].locations[0].adminArea6 === '') {
+          return dataObject.results[0].locations[0].adminArea6;
+        } else if (!dataObject.results[0].locations[0].street === ''){
+          return dataObject.results[0].locations[0].street;
+        } else {
+          return dataObject.results[0].locations[0].adminArea5;
         }
 }

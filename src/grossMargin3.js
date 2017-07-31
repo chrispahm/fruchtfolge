@@ -35,7 +35,8 @@ function createCroppingPage () {
 		// post status to status elem
 		document.getElementById('loading-status').innerHTML = "DECKUNGSBEITRÄGE DER ANBAUFRÜCHTE WERDEN ABGEFRAGT";
 		// delete previous contents of container elem
-		//document.getElementById('page4').innerHTML = "<div class='hide' id='blur-costs'></div> <div id='stepProcedures'> <div id='tabelle'></div> <div class='hide' id='replacementBox'> <div id='machInputs'> <label class='labelDropDown' for='procedure.group'>Verfahrensgruppe</label> <select class='replacementDropDown' id='procedure.group'> </select> <label class='labelDropDown' for='procedure.procedure'>Arbeitsverfahren</label> <select class='replacementDropDown' id='procedure.procedure'> </select> <label class='labelDropDown' for='procedure.combination'>Maschinenkombination</label> <select class='replacementDropDown' id='procedure.combination'> </select> <label class='labelDropDown' for='procedure.amount'>Menge</label> <select class='replacementDropDown' id='procedure.amount'> </select> <label class='labelDropDown' for='procedure.workingWidth'>Arbeitsbreite</label> <select class='replacementDropDown' id='procedure.workingWidth'> </select> </div> <button id='buttonOk'>ÜBERNEHMEN</button> <button id='buttonCancel'>ABBRECHEN</button> </div> <div id='subseqCrops'></div> <div id='subseqCropsRight'></div> </div> <div id='LeisteCrops'></div> <input id='weiter-costs' class='weiter-oben' type='button' value='WEITER' />"
+		document.getElementById('page4').innerHTML = "<div class='hide' id='blur-costs'></div> <div id='stepProcedures'> <div id='tabelle'></div> <div class='hide' id='replacementBox'> <div id='machInputs'> <label class='labelDropDown' for='procedure.group'>Verfahrensgruppe</label> <select class='replacementDropDown' id='procedure.group'> </select> <label class='labelDropDown' for='procedure.procedure'>Arbeitsverfahren</label> <select class='replacementDropDown' id='procedure.procedure'> </select> <label class='labelDropDown' for='procedure.combination'>Maschinenkombination</label> <select class='replacementDropDown' id='procedure.combination'> </select> <label class='labelDropDown' for='procedure.amount'>Menge</label> <select class='replacementDropDown' id='procedure.amount'> </select> <label class='labelDropDown' for='procedure.workingWidth'>Arbeitsbreite</label> <select class='replacementDropDown' id='procedure.workingWidth'> </select> </div> <button id='buttonOk'>ÜBERNEHMEN</button> <button id='buttonCancel'>ABBRECHEN</button> </div> <div id='subseqCrops'></div> <div id='subseqCropsRight'></div> </div> <div id='LeisteCrops'></div> <input id='weiter-costs' class='weiter-oben' type='button' value='WEITER' /> <script type='text/javascript'> document.getElementById('weiter-costs').onclick = function() {return loadingScreen(constraints, 5, 'weiter-costs', null, 'EINEN AUGENBLICK BITTE') }; </script>";
+		document.getElementById('weiter-costs').onclick = function() {return loadingScreen(constraints, 5, 'weiter-costs', null, 'EINEN AUGENBLICK BITTE') };
 		if (doc.results[0].docs[0].ok && doc.results[1].docs[0].ok) {
 		// If both crops & cropsList
 			var crops = doc.results[0].docs[0].ok.array
@@ -47,10 +48,10 @@ function createCroppingPage () {
 		    	}
 			})
 			if (crops.length > 0) {
-				resolve(crops)
+				return Promise.resolve(crops)
 			}
 			else {
-				resolve(null)
+				return Promise.resolve(null)
 			}
 		} else if (doc.results[0].docs[0].ok && doc.results[1].docs[0].error) {
 		// If cropsList but no crops
@@ -98,7 +99,9 @@ function createCroppingPage () {
 		});
 
 		function createCrops(data) {
-			var db = new PouchDB(couchPath + 'crops')
+			var db = new PouchDB(couchPath + 'crops');
+			if (requests.docs.length === 0) return Promise.resolve();
+
 			return db.bulkGet(requests).then(function (docs) {
 				docs.results.forEach(function (resultObject, index) {
 					var result = resultObject.docs[0].ok;
@@ -152,7 +155,7 @@ function createCroppingPage () {
 				return
 			}
 			else {
-				return promiseArr.push(new Promise (function (resolve) {
+				return promiseArr.push(new Promise (function (resolve2) {
 					var db = new PouchDB(couchPath + '/sgm')
 					// ToDo - get price closest to farm
 					if (crop == 'Winterweizen') {
@@ -180,12 +183,13 @@ function createCroppingPage () {
 						cropsStored[crop].yield = result.yield
 						cropsStored[crop].price = result.price
 						cropsStored[crop].variableCosts = result.variableCosts
-						return Promise.resolve()
+						return resolve2()
 					}).catch(function (err) {
+						console.log(err)
 						cropsStored[crop].yield = 0
 						cropsStored[crop].price = 0
 						cropsStored[crop].variableCosts = 0
-						return Promise.resolve()
+						return resolve2()
 					})
 				}))
 			}
@@ -198,6 +202,7 @@ function createCroppingPage () {
 	})
 }).then(function () {
 	var db = new PouchDB(couchPath + '/recommendations');
+	console.log('machCombiObject')
 	return db.get('machCombiObject').then(function (doc) {
 		machCombiObject = doc;
 		return Promise.resolve()
@@ -303,293 +308,108 @@ function createCroppingPage () {
 				direcCostArr.forEach(createRows)
 
 				// Variable machine costs
-				var sum = {}
-				function varMechCost() {
-					var trMech = document.createElement('TR');
-					var tdMech = document.createElement('TD')
-					tdMech.colSpan = '4';
-					tdMech.style.padding = '20px 0px 20px 0px';
 
-					// Create table inside td
-					var tableMech = document.createElement('TABLE')
-					var tableMechHead = document.createElement('THEAD')
-					var tableMechBody = document.createElement('TBODY')
+				var trMech = document.createElement('TR');
+				var tdMech = document.createElement('TD')
+				tdMech.colSpan = '4';
+				tdMech.style.padding = '20px 0px 20px 0px';
 
-					tableMech.appendChild(tableMechHead);
-					tableMech.appendChild(tableMechBody);
+				// Create table inside td
+				var tableMech = document.createElement('TABLE')
+				var tableMechHead = document.createElement('THEAD')
+				var tableMechBody = document.createElement('TBODY')
+
+				tableMech.appendChild(tableMechHead);
+				tableMech.appendChild(tableMechBody);
 
 
-					var kopfzeile = [];
-					kopfzeile[0] = "";
-					kopfzeile[1] = "Häufigkeit";
-					//kopfzeile[1] = "Zeitraum"
-					kopfzeile[2] = "Arbeitsvorgang";
-					kopfzeile[3] = "Menge";
-					kopfzeile[4] = "Arbeitszeitbedarf";
-					kopfzeile[5] = "Dieselbedarf";
-					kopfzeile[6] = "Kosten [EUR/ha]";
-					//kopfzeile[5] = ""
+				var kopfzeile = [];
+				kopfzeile[0] = "";
+				kopfzeile[1] = "Häufigkeit";
+				//kopfzeile[1] = "Zeitraum"
+				kopfzeile[2] = "Arbeitsvorgang";
+				kopfzeile[3] = "Menge";
+				kopfzeile[4] = "Arbeitszeitbedarf";
+				kopfzeile[5] = "Dieselbedarf";
+				kopfzeile[6] = "Kosten [EUR/ha]";
+				//kopfzeile[5] = ""
 
-					// Columns are created
-					var tr = document.createElement('TR');
-					tableMechHead.appendChild(tr);
-					for (i = 0; i < kopfzeile.length; i++) {
-					    var th = document.createElement('TH');
-					    th.appendChild(document.createTextNode(kopfzeile[i]));
-					    //th.classList.add('table-small');
-					    // cell containing 'insert above element'
-					    if (i == 0) {
-					    	th.rowSpan = '2';
-					    	th.style.width = '40px'
-					    	th.style.padding = '0px'
-					    	th.style.background = '#F5F5F5';
-					    }
-					    else if (i == 1) {
-					    	th.colSpan = '2'
-					    	//th.classList.remove('table-small');
-					    	//th.classList.add('table-medium');
-					    }
-					    else if (i == 2) {
-							th.classList.remove('table-small');
-					    	th.classList.add('table-desc');
-					    }
-					    else if (i == 6) {
-					    	th.colSpan = '7'
-					    }
-					    tr.appendChild(th);
-					}
-
-					var kopfzeile2 = [];
-					//kopfzeile2[0] = ""
-					kopfzeile2[0] = "Zeitraum"
-					kopfzeile2[1] = ""
-					kopfzeile2[2] = '../ha'
-					kopfzeile2[3] = "[h/ha]"
-					kopfzeile2[4] = "[l/ha]"
-					kopfzeile2[5] = "Abschreibung"
-					kopfzeile2[6] = "Zinskosten"
-					kopfzeile2[7] = "Sonstiges"
-					kopfzeile2[8] = "Reparaturen"
-					kopfzeile2[9] = "Betriebsstoffe"
-					kopfzeile2[10] = "Dienstleistungen"
-					kopfzeile2[11] = "Summe"
-
-					var tr = document.createElement('TR');
-					tableMechHead.appendChild(tr);
-					for (i = 0; i < kopfzeile2.length; i++) {
-					    var th = document.createElement('TH');
-					    th.appendChild(document.createTextNode(kopfzeile2[i]));
-					    if (i == 1) {
-					    	th.classList.add('table-desc');
-					    }
-					    else if (i > 4) {
-					    	th.classList.add('table-small');
-					    }
-					    else {
-					    	th.classList.add('table-medium');
-					    }
-					    if (i == 0) {
-					    	th.colSpan = '2'
-					    }
-					    tr.appendChild(th);
-					}
-					
-					//var sum = {}
-					sum.time = 0
-					sum.fuelCons = 0
-					sum.deprec = 0
-					sum.interest = 0
-					sum.others = 0
-					sum.maintenance = 0
-					sum.lubricants = 0
-					sum.services = 0
-					sum.total = 0
-
-					doc[item].procedures.forEach(function (procedure, index) {
-						var trStep = document.createElement('TR');
-						trStep.classList.toggle(item + ';' + index.toString())
-						trStep.setAttribute("name", procedure.group + ';' + procedure.procedure + ';' + procedure.combination);
-						//trStep.onclick = replaceProcedure;
-						//var tdStep = document.createElement('TD')
-						//tdStep.colSpan = '4'
-						function isEven(n) {
-						   return n % 2 == 0;
-						}
-
-						if (isEven(index)) {
-							var backgroundColour = '#ECECEC'
-						}
-						else {
-							var backgroundColour = '#F5F5F5'
-						}
-
-						// table cell for 'include before' button
-						var tdBefore = document.createElement('TD');
-						tdBefore.style.background = '#F5F5F5';
-						tdBefore.innerHTML = '<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"width="64px" height="64px" viewBox="0 0 64 64" style="enable-background:new 0 0 64 64;" xml:space="preserve"> <g> <g> <g id="circle_copy_4"> <g> <path d="M32,0C14.327,0,0,14.327,0,32s14.327,32,32,32s32-14.327,32-32S49.673,0,32,0z M32,62.001C15.432,62.001,2,48.568,2,32 C2,15.432,15.432,2,32,2c16.568,0,30,13.432,30,30C62,48.568,48.568,62.001,32,62.001z" fill="grey"/> </g> </g> <g id="Menu_1_"> <g> <polygon points="44,31 33,31 33,20 31,20 31,31 20,31 20,33 31,33 31,44 33,44 33,33 44,33 				" fill="grey"/> </g> </g> </g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> </svg>';
-						tdBefore.children[0].classList.toggle('insertBefore');
-						tdBefore.children[0].onclick = function () {
-							replaceProcedure(tdBefore.children[0]);
-						};
-						tdBefore.classList.toggle('insertBeforeButton');
-						tdBefore.rowSpan = (procedure.steps.length + 1).toString();
-						trStep.appendChild(tdBefore);
-
-						// create cells for frequency, month and amount
-						Object.keys(procedure).forEach(function (key) {
-							if (key !== 'steps' && key !== 'group' && key !== 'procedure' && key !== 'combination') {
-								var td = document.createElement('TD');
-								if (key == 'amount') {
-									if (procedure.amount !== '') {
-										td.appendChild(document.createTextNode(procedure.amount[0] + ' ' + procedure.amount[1]))
-									}
-								}
-								else if (key == 'month'){
-									var select = document.createElement('select');
-									var options = ['JAN1','JAN2','FEB1','FEB2','MRZ1','MRZ2','APR1','APR2','MAI1','MAI2','JUN1','JUN2','JUL1','JUL2','AUG1','AUG2','SEP1','SEP2','OKT1','OKT2','NOV1','NOV2','DEZ1','DEZ2']
-									options.forEach(function (month) {
-										var option = document.createElement('option');
-										option.innerHTML = month;
-										option.value = month;
-										if (procedure.month == month) {
-											option.selected = 'selected';
-										}
-										select.appendChild(option);
-									});
-									select.classList.toggle('monthDropDown');
-									select.style.background = backgroundColour;
-									td.appendChild(select);
-								}
-								else {
-									td.appendChild(document.createTextNode(procedure[key]));
-								}
-								td.style.textAlign = 'center'
-								if (key !== 'name') {
-									td.rowSpan = (procedure.steps.length + 1).toString();
-								}
-								else {
-									td.style.textAlign = 'left';
-									td.onclick = function () {
-										replaceProcedure(td);
-									};
-								}
-								trStep.appendChild(td);
-							}
-						})
-						for (var i = 0; i < 10; i++) {
-							var td = document.createElement('TD');
-							// table cell containing delete button
-							if (i == 9) {
-								//td.innerHTML = '<svg viewPort="0 0 12 12" version="1.1"xmlns="http://www.w3.org/2000/svg"> <line x1="1" y1="11"x2="11" y2="1"stroke="grey"stroke-width="1"/> <line x1="1" y1="1"x2="11" y2="11"stroke="grey"stroke-width="1"/> </svg>';
-								td.innerHTML = '<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"width="64px" height="64px" viewBox="0 0 64 64" style="enable-background:new 0 0 64 64;" xml:space="preserve"> <g> <g> <g id="circle_63_"> <g> <path d="M32,0C14.327,0,0,14.327,0,32s14.327,32,32,32s32-14.327,32-32S49.673,0,32,0z M32,62C15.432,62,2,48.568,2,32 C2,15.432,15.432,2,32,2c16.568,0,30,13.432,30,30C62,48.568,48.568,62,32,62z" fill="grey"/> </g> </g> <g id="Rectangle_2_copy"> <g> <path d="M37,24v-2c0-1.104-0.896-2-2-2h-6c-1.104,0-2,0.896-2,2v2h-5v2h2v16c0,1.104,0.896,2,2,2h12c1.104,0,2-0.896,2-2V26h2 v-2H37z M29,22h6v2h-6V22z M38,42H26V26h12V42z M31,28h-2v12h2V28z M35,28h-2v12h2V28z" fill="grey"/> </g> </g> </g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> <g> </g> </svg>';
-								td.children[0].classList.toggle('deleteHover')
-								td.children[0].onclick = function () {
-									deleteProcedure(td);
-								};
-								td.classList.toggle('deleteButton');
-								td.rowSpan = (procedure.steps.length + 1).toString();
-							}
-							trStep.appendChild(td);
-						}
-
-						trStep.style.background = backgroundColour;
-						tableMechBody.appendChild(trStep);
-
-						// Cells for each working step are created
-						// sums are stored in following var
-						
-						for (var i = 0; i < procedure.steps.length; i++) {
-							var step = procedure.steps[i];
-							var tr = document.createElement('TR');
-							tr.classList.toggle(item + ';' + index.toString());
-							tr.setAttribute("name", procedure.group + ';' + procedure.procedure + ';' + procedure.combination);
-						
-							var keys = ['description','time', 'fuelCons', 'deprec', 'interest', 'others', 'maintenance', 'lubricants', 'services'];
-
-							keys.forEach(function (key) {
-								var td = document.createElement('TD')
-								td.appendChild(document.createTextNode(step[key]))
-								td.style.textAlign = 'center'
-								if (key == 'description') {
-									td.style.textAlign = 'left';
-									td.onclick = function () {
-										replaceProcedure(td);
-									};
-								}
-								tr.style.background = backgroundColour;
-								tr.appendChild(td);
-							})
-
-							var tdSum = document.createElement('TD');
-							// add individual diesel price in future version
-							// step.deprec + step.interest step.others + + step.fuelCons * 0.7)
-							var sumHori = (step.maintenance + step.lubricants + step.services).toFixed(2)
-							tdSum.appendChild(document.createTextNode(sumHori))
-							tdSum.style.textAlign = 'center'
-							tr.appendChild(tdSum)
-
-							tableMechBody.appendChild(tr)
-
-							sum.time += step.time
-							sum.fuelCons += step.fuelCons
-							sum.deprec += step.deprec
-							sum.interest += step.interest
-							sum.others += step.others
-							sum.maintenance += step.maintenance
-							sum.lubricants += step.lubricants
-							sum.services += step.services
-							sum.total += Number(sumHori)
-						}
-						
-						//trStep.appendChild(tdStep)
-						//tableMechBody.appendChild(trStep)
-					})
-					var sumKeys = ['','','','','sum','time', 'fuelCons', 'deprec', 'interest', 'others', 'maintenance', 'lubricants', 'services', 'total']
-					var trSum = document.createElement('TR')
-					sumKeys.forEach(function (key) {
-						var tdSum = document.createElement('TD')
-						if (key == 'sum') {
-							tdSum.appendChild(document.createTextNode('Summe'))
-							tdSum.style.textAlign = 'right'
-						}
-						else if (key !== '') {
-							tdSum.appendChild(document.createTextNode((sum[key]).toFixed(2)))
-						}
-						tdSum.style.textAlign = 'center'
-						trSum.appendChild(tdSum)
-					})
-					tableMechBody.appendChild(trSum)
-
-					// show/hide variable machine cost row on click
-					createRows(['Variable Maschinenkosten', '', '', sum.total.toFixed(2)], function (e) {
-						    e.__toggle = !e.__toggle;
-					        var target = e.target.parentElement.nextSibling;
-
-					        if( target.classList.contains('hide')) {
-					            target.classList.remove('hide');
-					        }
-					        else {
-					            target.classList.toggle('hide');
-					        }
-					    }
-					)
-					
-					tdMech.appendChild(tableMech);
-					trMech.appendChild(tdMech);
-					trMech.classList.toggle('hide');
-					tableBody.appendChild(trMech);
+				// Columns are created
+				var tr = document.createElement('TR');
+				tableMechHead.appendChild(tr);
+				for (i = 0; i < kopfzeile.length; i++) {
+				    var th = document.createElement('TH');
+				    th.appendChild(document.createTextNode(kopfzeile[i]));
+				    //th.classList.add('table-small');
+				    // cell containing 'insert above element'
+				    if (i == 0) {
+				    	th.rowSpan = '2';
+				    	th.style.width = '40px'
+				    	th.style.padding = '0px'
+				    	th.style.background = '#F5F5F5';
+				    }
+				    else if (i == 1) {
+				    	th.colSpan = '2'
+				    	//th.classList.remove('table-small');
+				    	//th.classList.add('table-medium');
+				    }
+				    else if (i == 2) {
+						th.classList.remove('table-small');
+				    	th.classList.add('table-desc');
+				    }
+				    else if (i == 6) {
+				    	th.colSpan = '7'
+				    }
+				    tr.appendChild(th);
 				}
-				varMechCost();
-				
-				// add row for total variable costs
-				// add interest costs
-				createRows(['Zinskosten (3 Monate)','','', (Number(sum.total.toFixed(2)) / 12 * 3 * 0.03).toFixed(2)]);
-				createRows(['Summe variable Kosten','','', (Number(doc[item].variableCosts) + Number(sum.total.toFixed(2)) + Number(sum.total.toFixed(2)) / 12 * 3 * 0.03 ).toFixed(2)]);
-				// add row for gross margin
-				createRows(['Deckungsbeitrag','','', ((Number(doc[item].price) * Number(doc[item].yield)).toFixed(2) - (Number(doc[item].variableCosts) + Number(sum.total.toFixed(2)) + Number(sum.total.toFixed(2)) / 12 * 3 * 0.03)).toFixed(2)])
 
-				// append table to DOM
-			    tableDiv.appendChild(table);
+				var kopfzeile2 = [];
+				//kopfzeile2[0] = ""
+				kopfzeile2[0] = "Zeitraum"
+				kopfzeile2[1] = ""
+				kopfzeile2[2] = '../ha'
+				kopfzeile2[3] = "[h/ha]"
+				kopfzeile2[4] = "[l/ha]"
+				kopfzeile2[5] = "Abschreibung"
+				kopfzeile2[6] = "Zinskosten"
+				kopfzeile2[7] = "Sonstiges"
+				kopfzeile2[8] = "Reparaturen"
+				kopfzeile2[9] = "Betriebsstoffe"
+				kopfzeile2[10] = "Dienstleistungen"
+				kopfzeile2[11] = "Summe"
+
+				var tr = document.createElement('TR');
+				tableMechHead.appendChild(tr);
+				for (i = 0; i < kopfzeile2.length; i++) {
+				    var th = document.createElement('TH');
+				    th.appendChild(document.createTextNode(kopfzeile2[i]));
+				    if (i == 1) {
+				    	th.classList.add('table-desc');
+				    }
+				    else if (i > 4) {
+				    	th.classList.add('table-small');
+				    }
+				    else {
+				    	th.classList.add('table-medium');
+				    }
+				    if (i == 0) {
+				    	th.colSpan = '2'
+				    }
+				    tr.appendChild(th);
+				}
+				// create var. machine Cost table
+				varMechCost({
+					'tableMechBody': tableMechBody,
+					'tableMech': tableMech,
+					'tdMech': tdMech,
+					'trMech': trMech,
+					'tableBody': tableBody,
+					//'tableDiv': tableDiv,
+					'json': doc[item],
+					'name': item
+				});
+				// append table to dom
+				tableDiv.appendChild(table);
 
 			    // add Checkboxes for Subsequent crops
 			    var container = document.createElement('div');

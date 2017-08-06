@@ -3,6 +3,7 @@
 // Purpose:   Hex encodes string
 // Args:      string to encode
 //---------------------------------------------------------
+/*
 function toHex (str) {
 	var hex= ''
 	for (var i=0; i < str.length; i++) {
@@ -10,7 +11,7 @@ function toHex (str) {
 	}
 		return hex
 }
-
+*/
 //---------------------------------------------------------
 // G L O B A L E S
 //var profile;
@@ -44,7 +45,7 @@ function signup() {
 		}	
 		if (userdata.password !== userdata.repeatPass) return reject('Die eingegeben Passwörter stimmen nicht überein')
 
-		var url = 'http://open.mapquestapi.com/geocoding/v1/address?key=eoEN8KRKeFAMe9JR8UG53yw5Gh3XU9Ex&location=' + userdata.street + ',' + userdata.postcode;
+		var url = 'https://open.mapquestapi.com/geocoding/v1/address?key=eoEN8KRKeFAMe9JR8UG53yw5Gh3XU9Ex&location=' + userdata.street + ',' + userdata.postcode;
 		
 		return get(url).then(function (response) {
 			var parsed = JSON.parse(response);
@@ -93,6 +94,8 @@ function signup() {
 					  	'street': userdata.street,
 					  	'postcode': userdata.postcode
 				  }).then(function () {
+				  	// show navMenu after succesful login
+					hideMenu(false);
 				  	resolve();
 				  });
 				});
@@ -141,6 +144,8 @@ function login () {
 			}).on('error', function (err) {
 			  // handle error
 			});
+			// show navMenu after succesful response
+			hideMenu(false);
 		  resolve(response)
 		})
 	})
@@ -152,6 +157,7 @@ function login () {
 // Purpose:   user login
 // Args:      usr name + pw as string
 //---------------------------------------------------------
+/*
 function loadingScreen(func1, step, button, PromiseArr, status) {
 	// post status to status elem
 	document.getElementById('loading-status').innerHTML = status;
@@ -177,6 +183,12 @@ function loadingScreen(func1, step, button, PromiseArr, status) {
 			    	target.className = "blur-overlay";
 			    	spinner.stop();
 			    }, 700)
+			    if (func1 !== 'dirtyHack' && step !== 1) {
+					profile.get('info').then(function (info) {
+						info.status = step;
+						return profile.put(info);
+					});
+				};
 		    }).catch(function (err) {
 		    	alert(err);
 		    	goTo(1);
@@ -192,22 +204,29 @@ function loadingScreen(func1, step, button, PromiseArr, status) {
 			    setTimeout(function () {
 			    	target.className = "blur-overlay";
 			    	spinner.stop();
-			    }, 700)
+			    }, 700);
+			    if (func1 !== 'dirtyHack' && step !== 1) {
+					profile.get('info').then(function (info) {
+						info.status = step;
+						return profile.put(info);
+					});
+				};
 		    }).catch(function (err) {
 		    	alert(err);
 		    	goTo(1);
 		    	target.style.opacity = 0;
 		    });
     	}
-	}, 2000);
+	}, 1000);
 }
-
+*/
 function logout() {
 	var db = new PouchDB(couchPath + '/users', {skip_setup: true});
 	db.logout(function (err, response) {
 	  if (err) {
 	    // network error
 	  }
+	  hideMenu(true);
 	  goTo(1);
 	})
 }

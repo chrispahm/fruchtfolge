@@ -1,5 +1,8 @@
 function constraints() {
 	return new Promise (function (resolve, reject) {
+		// recreate initial html state
+		document.getElementById('page5').innerHTML = "<div class='hide' id='blur-const'></div> <div class='hide' id='addConstraint'> <div id='constraintInputs'> <h2 style='text-align: center;'>NEUE NEBENBEDINGUNG HINZUFÜGEN</h2> <label class='labelDropDown' for='constraint.crop'>Kultur</label> <select class='replacementDropDown' id='constraint.crop'></select> <button id='addCrop'></button> <label class='labelDropDown' for='constraint.type'>Bedingung</label> <select class='replacementDropDown' id='constraint.type'> <option selected>maximal</option> <option >mindestens</option> </select> <label class='labelDropDown' for='constraint.amount'>Anbaufläche in ha</label> <input type='text' class='constAmountInput' pattern='[0-9]' id='constraint.amount'> </div> <button id='buttonConstOk' class='buttonConstOk'>ÜBERNEHMEN</button> <button id='buttonConstCancel' class='buttonConstCancel'>ABBRECHEN</button> </div> <div id='containerConst' style='width: 50vw; position: absolute; top: 120px; left: 50%; margin-left: -25vw'> <h1 style='font-family: \"open_sanscondensed_light\"; font-weight: normal; letter-spacing: 0.2em'>NEBENBEDINGUNGEN</h1> <table id='tableConst'></table> </div> <input id='weiter-const' class='weiter-oben' type='button' value='WEITER' />"
+		document.getElementById('weiter-const').onclick = function() {return loadingScreen(createModel, 6, 'weiter-costs',null, 'DECKUNGSBEITRÄGE PRO FELD UND KULTUR WERDEN ERRECHNET') };
 		profile.bulkGet({
 			docs: [
 				{id: 'crops'},
@@ -65,13 +68,22 @@ function constraints() {
 					constraints.array.push([[crop],'max', crops[crop].maxShare * totArea, index]);
 					createConst([crop],'max', crops[crop].maxShare * totArea, index);
 				});
+				
+				var container = document.getElementById('containerConst');
+				var button = document.createElement('button');
+				button.id = 'const-btn';
+				button.classList = 'invekosBtn';
+				button.setAttribute('name', 'const-btn');
+				button.innerHTML = 'HINZUFÜGEN';
+				container.appendChild(button);
+				/*
 				var tr = document.createElement('tr');
 				var td = document.createElement('td');
 				td.innerHTML = '<button type="button" id="const-btn" class="invekosBtn" name="const-btn">HINZUFÜGEN</button>';
 				td.onclick = showConstBox;
 				tr.appendChild(td);
 				table.appendChild(tr);
-
+				*/
 				return profile.put(constraints).then(function () {
 					resolve();
 				});
@@ -82,6 +94,16 @@ function constraints() {
 				constraints.array.forEach(function (constraint) {
 					createConst(constraint[0], constraint[1], constraint[2], constraint[3]);
 				});
+
+				var container = document.getElementById('containerConst');
+				var button = document.createElement('button');
+				button.id = 'const-btn';
+				button.onclick = showConstBox;
+				button.classList = 'invekosBtn';
+				button.setAttribute('name', 'const-btn');
+				button.innerHTML = 'HINZUFÜGEN';
+				container.appendChild(button);
+				/*
 				var tr = document.createElement('tr');
 				var td = document.createElement('td');
 				td.innerHTML = '<button type="button" id="const-btn" class="invekosBtn" name="const-btn">HINZUFÜGEN</button>';
@@ -89,6 +111,7 @@ function constraints() {
 				tr.appendChild(td);
 				td.style.backgroundColor = '#F5F5F5';
 				table.appendChild(tr);
+				*/
 
 				return resolve();
 			}
@@ -105,7 +128,12 @@ function constraints() {
 					var option = document.createElement('option');
 					option.innerHTML = crop;
 					select.appendChild(option);
-				})
+				});
+
+				// add EFA option
+				var option = document.createElement('option');
+				option.innerHTML = 'efa';
+				select.appendChild(option);
 			}
 
 			function addCrop (x) {
@@ -158,7 +186,7 @@ function constraints() {
 
 				tr.appendChild(td1);
 				tr.appendChild(td2);
-
+				
 				table.appendChild(tr);
 			}
 

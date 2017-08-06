@@ -1,9 +1,12 @@
 function createModel() {
 	return new Promise(function (resolve, reject) {
+		// recreate initial html state
+		document.getElementById('page6').innerHTML = "<div id='wrapper'> <div id='tabelle-results'></div> <div id='canvas-holder'> <canvas id='chart-area' /> </div> </div> <div id='mapResults'> <h2 style='margin-left: 40px'>KARTE</h2> <div id='crop-legend' class='legend'> <h4>Anbaukulturen</h4> </div> </div>";
 		Promise.all([gmPlot(), profile.bulkGet({
 				docs: [
 					{id: 'fields'},
-					{id: 'crops'}
+					{id: 'crops'},
+					{id: 'constraints'}
 				]
 		})]).then(function (response) {
 			// --------------------------
@@ -14,13 +17,17 @@ function createModel() {
 			var gmPlotAll = response[0][1];
 			var fields = response[1].results[0].docs[0].ok;
 			var crops = response[1].results[1].docs[0].ok;
-			// var restrictions = response[1].results[2].docs[0].ok;
+			var constraints = response[1].results[2].docs[0].ok;
 			
 			// get total ha size
           	var totalHa = 0;
+          	// number of fields
+          	var noFields = 0;
+
           	Object.keys(fields).forEach(function (plot) {
           		if (fields[plot].size) {
           			totalHa += Number(fields[plot].size);
+          			noFields ++;
           		}
           	})
 
@@ -29,23 +36,50 @@ function createModel() {
 	            "optimize": "gm",
 	            "opType": "max",
 	            "constraints": {
-	            	"efa": {
-	            		"min": totalHa * 0.05
-	            	},
-	            	[toHex("Mais").substring(0,8)]: {
-	            		"min": 50
-	            	},
-	            	[toHex("Acker-/Puff-/Pferdebohne").substring(0,8)]: {
-	            		"min": 20
-	            	},
-	            	[toHex("Winterweizen").substring(0,8)]: {
-	            		"min": 30
-	            	}
+	            	//"efa": {
+	            	//	"min": totalHa * 0.05
+	            	//}
 	            },
 	            "variables": {},
 	            "ints": {},
 	            "binaries": {}
           	}
+          	// ----------------------------------
+          	// add constraints
+          	// ----------------------------------
+          	var cropAssignment = {};
+          	//var constraintsObj = {};
+          	Object.keys(crops).forEach(function (crop, index) {
+          		cropAssignment[crop] = {
+          			'name': 'c' + index + 'c',
+          			'const': []
+          		}
+          	})
+
+          	constraints.array.forEach(function (constraint) {
+          		// create string combining the crop constraints
+          		var string = '';
+          		constraint[0].forEach(function (crop) {
+          			string += cropAssignment[crop].name;
+          		});
+          		// add constraints to according crop constraint array
+          		constraint[0].forEach(function (crop) {
+          			cropAssignment[crop].const.push([string, constraint[1], constraint[2]])
+          		});
+          		// add constraint to model
+      		    if (!model.constraints[string]) {
+      				model.constraints[string] = {};
+      				model.constraints[string][constraint[1]] = constraint[2];
+      			}
+      			else {
+      				model.constraints[string][constraint[1]] = constraint[2];
+      			}
+          	});
+
+          	// ----------------------------------
+          	// create model
+          	// ----------------------------------
+
           	var assign = {};
           	// create basic model with all crop options per plot. Only 1 crop possible per plot
           	Object.keys(gmPlot).forEach(function (plot, indexPlot) {
@@ -65,16 +99,21 @@ function createModel() {
           				"field": plot,
           				"crop": crop
           			}
-
+          			// add variables per field
           			model.variables[abbCombi] = {
           				[abbField]: 1,
-          				[toHex(crop).substring(0,8)]: fields[plot].size,
+          				//[toHex(crop).substring(0,8)]: fields[plot].size,
           				"efa": crops[crop].efaFactor * fields[plot].size,
           				"gm": gmPlot[plot][crop].gmTot
           			}
+          			// add crop variables from cropAssignment object
+          			cropAssignment[crop].const.forEach(function (constraint) {
+          				model.variables[abbCombi][constraint[0]] = fields[plot].size;
+          			})
 
           			model.binaries[abbCombi] = 1;
 
+          			/*
           			if (!model.constraints[toHex(crop).substring(0,8)]) {
           				model.constraints[toHex(crop).substring(0,8)] = {
           					'max': crops[crop].maxShare * totalHa
@@ -83,18 +122,30 @@ function createModel() {
           			else {
           				model.constraints[toHex(crop).substring(0,8)].max = crops[crop].maxShare * totalHa;
           			}
-          			
+          			*/
           		});
           	});
-          	//console.log(model)
-          	return Promise.all([solver.solveNEOS(model, 0, elem), 
-          						Promise.resolve(assign), 
-          						Promise.resolve(gmPlot),
-          						Promise.resolve(fields),
-          						Promise.resolve(crops),
-          						Promise.resolve(totalHa),
-          						Promise.resolve(gmPlotAll),
-          						])
+
+          	if (noFields > 18) {
+				return Promise.all([solver.solveNEOS(model, 0, elem), 
+      						Promise.resolve(assign), 
+      						Promise.resolve(gmPlot),
+      						Promise.resolve(fields),
+      						Promise.resolve(crops),
+      						Promise.resolve(totalHa),
+      						Promise.resolve(gmPlotAll),
+      						])
+          	}
+          	else {
+				return Promise.all([Promise.resolve(solver.Solve(model)), 
+      						Promise.resolve(assign), 
+      						Promise.resolve(gmPlot),
+      						Promise.resolve(fields),
+      						Promise.resolve(crops),
+      						Promise.resolve(totalHa),
+      						Promise.resolve(gmPlotAll),
+      						])
+          	}
           	//.then(function(result){
 			//	resolve(result)
 			//})

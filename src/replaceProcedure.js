@@ -10,9 +10,9 @@ function replaceProcedure (e) {
 			trArray.push(trList[i]);
 		}
 		var index = trArray[0].rowIndex - 2;
-		var groupId = trList[0].getAttribute('name').split(';')[0];
-		var procedureId = trList[0].getAttribute('name').split(';')[1];
-		var combinationId = trList[0].getAttribute('name').split(';')[2];
+		var groupId = trArray[0].getAttribute('name').split(';')[0];
+		var procedureId = trArray[0].getAttribute('name').split(';')[1];
+		var combinationId = trArray[0].getAttribute('name').split(';')[2];
 		// if procedure contains of more than 1 step, the combination names are combined
 		// in order to be found accordingly
 		var groupName, procedureName, combinationName, amountName, workingWidthName;
@@ -241,7 +241,7 @@ function replaceProcedure (e) {
 				'combination': machCombiObject[group.value][procedure.value][combination.value].id
 		}
 		var id = ids.group + '/' + ids.procedure + '/' + ids.combination + '/2/' + machCombiObject[group.value][procedure.value][combination.value].resistance[0] + '/2/' + amount.value + '/' + workingWidth.value;
-		var db = new PouchDB(couchPath + '/procedures');
+		var db = new PouchDB(couchPath + '/procedures2');
 		profile.get('crops').then(function (crops) {
 			db.get(id).then(function (procedure) {
 				// create new entry
@@ -420,6 +420,26 @@ function replaceProcedure (e) {
 					for (var i = 0; i < trArray.length; i++) {
 						srcTable.removeChild(trArray[i])
 					}
+				}
+
+				// update row names
+				var rowsCrop = srcTable.getElementsByTagName('tr');
+				var count = 0;
+				crops[cropName].procedures.forEach(function (procedure, j) {
+					var color = '#ECECEC';
+					if (isEven(j)) color = '#F5F5F5';
+					rowsCrop[count].classList.value = cropName + ';' + j;
+					rowsCrop[count].style.background = color;
+					count++;
+					procedure.steps.forEach(function (step, m) {
+						rowsCrop[count].classList.value = cropName + ';' + j;
+						rowsCrop[count].style.background = color;
+						count++;
+					});
+				});
+				
+				function isEven(n) {
+				   return n % 2 == 0;
 				}
 
 				// hide box

@@ -26,7 +26,7 @@ button:focus {
   height: 100%;
   z-index: 95;
   transition: all 0.8s ease-in-out;
-  opacity: 0;
+  opacity: 1;
 }
 
 #blur-costs {
@@ -116,6 +116,10 @@ button:focus {
     background: rgba(0,0,0,0.02);
 }
 
+.registrieren-oben:hover {
+  background-color: rgba(0,0,0,0.05)
+}
+
 .input {
   margin-bottom: 5px;
   width: 233px;
@@ -172,6 +176,10 @@ button:focus {
     vertical-align: top;
     padding-top: 6px;
     background: rgba(0,0,0,0.02);
+}
+
+.anmelden-oben:hover {
+  background-color: rgba(0,0,0,0.05)
 }
 
 div.flip-container {
@@ -509,6 +517,10 @@ input[type="checkbox"]:checked + label span {
     background: rgba(0,0,0,0.02);
 }
 
+.login-button:hover {
+    background: rgba(0,0,0,0.05);
+}
+
 .register-button {
 	position: absolute;
 	top: 50%;
@@ -533,6 +545,10 @@ input[type="checkbox"]:checked + label span {
     vertical-align: top;
     padding-top: 6px;
     background: rgba(0,0,0,0.02);
+}
+
+.register-button:hover {
+    background: rgba(0,0,0,0.05);
 }
 
 .forgot {
@@ -560,6 +576,48 @@ input[type="checkbox"]:checked + label span {
 .registrierung {
 	background: white;
 }
+#menuNav {
+    position: fixed;
+    right: 22px;
+    top: 22px;
+    z-index: 120;
+    width: 33px;
+    height: 27px;
+    background: url("data:image/svg+xml;utf8,<svg version='1.1' id='Ebene_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' width='33px' height='27px' viewBox='0 0 33 27' enable-background='new 0 0 33 27' xml:space='preserve'> <g> <rect width='33' height='2'/> </g> <g> <rect y='25' width='33' height='2'/> </g> <g> <rect y='12' width='33' height='2'/> </g> </svg>")  no-repeat;
+    background-size: 33px 25px;
+    background-repeat: no-repeat;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+    display: none;
+    right: 0;
+    top: 30px;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+    color: black;
+    padding: 5px 5px;
+    text-decoration: none;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    line-height: 20px;
+    display: block;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {background-color: #f1f1f1}
+
+/* Show the dropdown menu on hover */
+#menuNav:hover .dropdown-content {
+    display: block;
+}
 
 @media screen and (max-width: 500px) {
 body {
@@ -586,4 +644,5 @@ body {
 .login {
 	background: transparent;
 }
+
 }

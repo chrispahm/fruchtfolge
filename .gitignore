@@ -1,2 +1,5 @@
 
 DBbackup/
+public/
+prod/
+server.js

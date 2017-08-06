@@ -2,6 +2,8 @@
 
 Fruchtfolge (german for crop rotation) is a web app project aimed at identifying optimal crop production plans for farmers, maximising their potential income. It is currently under development.
 
+:tada: Happy to annouce a first working beta running at [https://v-server-node.ilb.uni-bonn.de](https://v-server-node.ilb.uni-bonn.de)!
+
 ## Idea
 
 In agricultural sciences, farm scale models are intesively used for policy analysis (eg. [Jansen et al. (2010)](https://link.springer.com/article/10.1007/s00267-010-9588-x) and [Louhichi et al. (2012)](http://www.sciencedirect.com/science/article/pii/S0308521X1000082X) among others). However, despite their potential use as an income maximising management support tool, they are rarely used in agricultural practice (as illustrated by [Musshoff and Hirschauer (2016), p. 216f.](https://books.google.de/books?id=J6q3DAAAQBAJ&pg=PA59&dq=Modernes+Agrarmanagement:+Betriebswirtschaftliche+Analyse-+und+Planungsverfahren+bokelmann&hl=de&sa=X&ved=0ahUKEwiT97mkutvUAhWmQpoKHUqjA4wQ6AEIJzAA#v=onepage&q&f=false)).
@@ -22,24 +24,29 @@ In order to overcome the aforementioned issues, Linked Open Data is used whereve
 - Standard cultivation procedures per crop (used for individual variable crops per plot/crop) taken from [KTBL](http://www.ktbl.de/)
 - Standard gross margins are taken from [KTBL](http://daten.ktbl.de/sdb/welcome.do)
 
-## Dependencies
+From the data input, a linear farm model is automatically set up. Farmers may specifiy constraints regarding maximum and minimum crop shares. In the model, the optimal crop allocation per plot is then determined. For 20 plots and less, the model is solved ad-hoc on the users machine, while larger models are first translated into a [GAMS](https://www.gams.com/) model and solved using the [NEOS-Server](https://neos-server.org/neos/).
+
+## Libraries used
 
 The web app is written in Javascript and HTML, and uses the following libraries
-[Mapbox GL JS](https://github.com/mapbox/mapbox-gl-js)
-[Mapbox GL Draw](https://github.com/mapbox/mapbox-gl-draw)
-[Turf JS](https://github.com/Turfjs/turf)
-[proj4js](https://github.com/proj4js/proj4js)
-[PouchDB](https://github.com/pouchdb/pouchdb)
-[PouchDB-Auth](https://github.com/pouchdb/pouchdb-auth)
-[ObjTree](https://github.com/rranauro/ObjTree)
+- [Mapbox GL JS](https://github.com/mapbox/mapbox-gl-js)
+- [Mapbox GL Draw](https://github.com/mapbox/mapbox-gl-draw)
+- [Turf JS](https://github.com/Turfjs/turf)
+- [proj4js](https://github.com/proj4js/proj4js)
+- [PouchDB](https://github.com/pouchdb/pouchdb)
+- [PouchDB-Auth](https://github.com/pouchdb/pouchdb-auth)
+- [jsLPSolver](https://github.com/JWally/jsLPSolver)
+- [ObjTree](https://github.com/rranauro/ObjTree)
+- [spin.js](https://github.com/fgnass/spin.js)
+- [Chart.js](https://github.com/chartjs/Chart.js)
 
 ## Contribution
 
 Contribution is highly appreciated! 
 Current ToDos:
-  - fix issues in procedure replacement (see cropReplacementTest.html page)
-  - creation of gross margin matrix (gross margins per plot/crop)
-  - creation of overview page (showing possible subsequent crops and deterministic gross margins)
+  - Bug fixes
+  - reduction of browser inconsistencies
+  - speed improvements (especially loading time)
 
 If you like to get in touch send a mail to christoph.pahmeyer@uni-bonn.de!
 

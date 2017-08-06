@@ -4,9 +4,9 @@
 	<meta charset="utf-8"> 
 	<title>Fruchtfolge</title>
 	<meta name="description" content="Fruchtfolge Optimierung">
-  	<meta name="author" content="Christoph Pahmeyer">
-  	<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-  	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <meta name="author" content="Christoph Pahmeyer">
+	<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 	<script src="src/lib/pouchdb-6.2.0.js"></script>
 	<script src="src/lib/pouchdb.authentication.min.js"></script>
 	<script src="src/parseElanXml.js"></script>
@@ -433,6 +433,30 @@ body {
     padding-top: 6px;
     background-color: rgba(0,0,0,0.2)
 }
+
+.cropsExpand:hover {
+  background: url("data:image/svg+xml;utf8,<svg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='24' height='24' viewBox='0 0 24 24'><path fill='#444' d='M7.406 7.828l4.594 4.594 4.594-4.594 1.406 1.406-6 6-6-6z'></path></svg>");
+    background-position: 100% 50%;
+    background-repeat: no-repeat;
+}
+
+.cropsCollaps {
+  background: url("data:image/svg+xml;utf8,<svg width='24' height='24' xmlns='http://www.w3.org/2000/svg'> <g> <title>background</title> <rect fill='none' id='canvas_background' height='402' width='582' y='-1' x='-1'/> </g> <g> <title>Layer 1</title> <path transform='rotate(-180 12,11.531000137329102) ' id='svg_1' d='m7.406,7.828l4.594,4.594l4.594,-4.594l1.406,1.406l-6,6l-6,-6l1.406,-1.406z' fill='#444'/> </g> </svg>");
+    background-position: 100% 50%;
+    background-repeat: no-repeat;
+}
+
+.mechTableExpand {
+  background: url("data:image/svg+xml;utf8,<svg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='24' height='24' viewBox='0 0 24 24'><path fill='#444' d='M7.406 7.828l4.594 4.594 4.594-4.594 1.406 1.406-6 6-6-6z'></path></svg>");
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+}
+
+.mechTableCollaps {
+  background: url("data:image/svg+xml;utf8,<svg width='24' height='24' xmlns='http://www.w3.org/2000/svg'> <g> <title>background</title> <rect fill='none' id='canvas_background' height='402' width='582' y='-1' x='-1'/> </g> <g> <title>Layer 1</title> <path transform='rotate(-180 12,11.531000137329102) ' id='svg_1' d='m7.406,7.828l4.594,4.594l4.594,-4.594l1.406,1.406l-6,6l-6,-6l1.406,-1.406z' fill='#444'/> </g> </svg>");
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+}
 </style>
 <body>
 <!--
@@ -657,7 +681,77 @@ if(!Promise){
 }
 // G L O B A L E S
 var profile;
-var couchPath = 'http://v-server-node.ilb.uni-bonn.de:5984';
+var couchPath = 'https://v-server-node.ilb.uni-bonn.de/db';
+
+function loadingScreen(func1, step, button, PromiseArr, status) {
+  // post status to status elem
+  document.getElementById('loading-status').innerHTML = status;
+  //
+  var button = document.getElementById(button)
+  // start spinner
+  var target = document.getElementById("blur");
+  var opts = {lines: 13 , length: 10 , width: 3 , radius: 9 , scale: 1 , corners: 1 , color: '#000', opacity: 0.25 , rotate: 0 , direction: 1 , speed: 1 , trail: 60 , fps: 20 , zIndex: 2e9 , className: 'spinner', top: '50%', left: '50%', shadow: false , hwaccel: false , position: 'absolute'}
+  var spinner = new Spinner(opts).spin(target);
+    // change button value to "wait"
+    button.value = "WARTEN...";
+    // 
+    var elem = document.getElementById("wrapper");
+  target.className = "";
+    target.style.opacity = 1;
+    setTimeout(function() {
+      goTo(step);
+      if (func1) {
+        func1().then(function () {
+          target.style.opacity = 0;
+          button.value = 'WEITER';
+          setTimeout(function () {
+            target.className = "blur-overlay";
+            spinner.stop();
+          }, 700)
+          if (func1 !== 'dirtyHack' && step !== 1) {
+          profile.get('info').then(function (info) {
+            info.status = step;
+            return profile.put(info);
+          });
+        };
+        }).catch(function (err) {
+          alert(err);
+          goTo(1);
+          target.style.opacity = 0;
+        });
+      }
+      else {
+        Promise.all(PromiseArr.map(function (promise) {
+          return promise();
+        })).then(function () {
+          target.style.opacity = 0;
+          button.value = 'WEITER';
+          setTimeout(function () {
+            target.className = "blur-overlay";
+            spinner.stop();
+          }, 700);
+          if (func1 !== 'dirtyHack' && step !== 1) {
+          profile.get('info').then(function (info) {
+            info.status = step;
+            return profile.put(info);
+          });
+        };
+        }).catch(function (err) {
+          alert(err);
+          goTo(1);
+          target.style.opacity = 0;
+        });
+      }
+  }, 1000);
+}
+
+function toHex (str) {
+  var hex= ''
+  for (var i=0; i < str.length; i++) {
+    hex += str.charCodeAt(i).toString(16);
+  }
+    return hex
+}
 
 var db = new PouchDB(couchPath + '/users', {skip_setup: true});
 db.getSession(function (err, response) {

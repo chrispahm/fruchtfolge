@@ -3,6 +3,7 @@
 // Purpose:   Hex encodes string
 // Args:      string to encode
 //---------------------------------------------------------
+/*
 function toHex (str) {
 	var hex= ''
 	for (var i=0; i < str.length; i++) {
@@ -10,7 +11,7 @@ function toHex (str) {
 	}
 		return hex
 }
-
+*/
 //---------------------------------------------------------
 // G L O B A L E S
 //var profile;
@@ -44,7 +45,7 @@ function signup() {
 		}	
 		if (userdata.password !== userdata.repeatPass) return reject('Die eingegeben Passwörter stimmen nicht überein')
 
-		var url = 'http://open.mapquestapi.com/geocoding/v1/address?key=eoEN8KRKeFAMe9JR8UG53yw5Gh3XU9Ex&location=' + userdata.street + ',' + userdata.postcode;
+		var url = 'https://open.mapquestapi.com/geocoding/v1/address?key=eoEN8KRKeFAMe9JR8UG53yw5Gh3XU9Ex&location=' + userdata.street + ',' + userdata.postcode;
 		
 		return get(url).then(function (response) {
 			var parsed = JSON.parse(response);
@@ -156,6 +157,7 @@ function login () {
 // Purpose:   user login
 // Args:      usr name + pw as string
 //---------------------------------------------------------
+/*
 function loadingScreen(func1, step, button, PromiseArr, status) {
 	// post status to status elem
 	document.getElementById('loading-status').innerHTML = status;
@@ -217,7 +219,7 @@ function loadingScreen(func1, step, button, PromiseArr, status) {
     	}
 	}, 1000);
 }
-
+*/
 function logout() {
 	var db = new PouchDB(couchPath + '/users', {skip_setup: true});
 	db.logout(function (err, response) {

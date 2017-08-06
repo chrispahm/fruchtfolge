@@ -20,9 +20,8 @@ var Term = expressions.Term;
  * Class: Model
  * Description: Holds the model of a linear optimisation problem
  **************************************************************/
-function Model(tolerance, precision, name) {
-
-    this.tableau = new Tableau(tolerance, precision);
+function Model(precision, name) {
+    this.tableau = new Tableau(precision);
 
     this.name = name;
 
@@ -933,14 +932,8 @@ var MilpSolution = require("./MilpSolution.js");
  *                   do we want to define an integer, given
  *                   that 20.000000000000001 is not an integer.
  *                   (defaults to 1e-8)
- *        tolerance:     The solver will stop the solution process 
- *                   when the proportional difference between 
- *                   the solution found and the best theoretical 
- *                   objective function is guaranteed to be 
- *                   smaller than tolerance. 
- *                   (defaults to 0.1)
  **************************************************************/
-function Tableau(tolerance, precision) {
+function Tableau(precision) {
     this.model = null;
 
     this.matrix = null;
@@ -956,15 +949,12 @@ function Tableau(tolerance, precision) {
     // Solution attributes
     this.feasible = true; // until proven guilty
     this.evaluation = 0;
-    this.simplexIters = 0;
 
     this.varIndexByRow = null;
     this.varIndexByCol = null;
 
     this.rowByVarIndex = null;
     this.colByVarIndex = null;
-
-    this.tolerance = tolerance || 0;
 
     this.precision = precision || 1e-8;
 
@@ -987,9 +977,10 @@ function Tableau(tolerance, precision) {
 module.exports = Tableau;
 
 Tableau.prototype.solve = function () {
-    this.simplex();
     if (this.model.getNumberOfIntegerVariables() > 0) {
         this.branchAndCut();
+    } else {
+        this.simplex();
     }
     this.updateVariableValues();
     return this.getSolution();
@@ -1163,13 +1154,8 @@ Tableau.prototype.setEvaluation = function () {
     // Rounding objective value
     var roundingCoeff = Math.round(1 / this.precision);
     var evaluation = this.matrix[this.costRowIndex][this.rhsColumn];
-    var roundedEvaluation =
+    this.evaluation =
         Math.round(evaluation * roundingCoeff) / roundingCoeff;
-
-    this.evaluation = roundedEvaluation;
-    if (this.simplexIters === 0) {
-        this.relaxedSolution = roundedEvaluation;
-    }
 };
 
 //-------------------------------------------------------------------
@@ -1371,9 +1357,7 @@ Tableau.prototype.applyCuts = function (branchingCuts){
 Tableau.prototype.branchAndCut = function () {
     var branches = [];
     var iterations = 0;
-    var tolerance = this.tolerance;
-    var acceptableThreshold = this.relaxedSolution * (1 - (tolerance/100));
-    
+
     // This is the default result
     // If nothing is both *integral* and *feasible*
     var bestEvaluation = Infinity;
@@ -1390,10 +1374,9 @@ Tableau.prototype.branchAndCut = function () {
     branches.push(branch);
 
     // If all branches have been exhausted terminate the loop
-    while (branches.length > 0 && bestEvaluation === Infinity || bestEvaluation > acceptableThreshold) {
+    while (branches.length > 0) {
         // Get a model from the queue
         branch = branches.pop();
-
         if (branch.relaxedEvaluation > bestEvaluation) {
             continue;
         }
@@ -1411,7 +1394,6 @@ Tableau.prototype.branchAndCut = function () {
         }
 
         var evaluation = this.evaluation;
-
         if (evaluation > bestEvaluation) {
             // This branch does not contain the optimal solution
             continue;
@@ -2601,7 +2583,6 @@ Tableau.prototype.phase2 = function () {
         // If no entering column could be found we're done with phase 2.
         if (enteringColumn === 0) {
             this.setEvaluation();
-            this.simplexIters += 1;
             return iterations;
         }
 
@@ -3041,7 +3022,9 @@ Equality.prototype.setRightHandSide = function (rhs) {
 
 Equality.prototype.relax = function (weight, priority) {
     this.relaxation = createRelaxationVariable(this.model, weight, priority);
+    this.upperBound.relaxation = this.relaxation;
     this.upperBound._relax(this.relaxation);
+    this.lowerBound.relaxation = this.relaxation;
     this.lowerBound._relax(this.relaxation);
 };
 
@@ -3112,7 +3095,7 @@ var Solver = function () {
      *                  it will run the model through all validation
      *                  functions in the *Validate* module
      **************************************************************/
-    this.Solve = function (model, tolerance, precision, full, validate) {
+    this.Solve = function (model, precision, full, validate) {
         // Run our validations on the model
         // if the model doesn't have a validate
         // attribute set to false
@@ -3128,7 +3111,7 @@ var Solver = function () {
         }
 
         if (model instanceof Model === false) {
-            model = new Model(tolerance, precision).loadJson(model);
+            model = new Model(precision).loadJson(model);
         }
 
         var solution = model.solve();
@@ -3175,10 +3158,7 @@ var Solver = function () {
      **************************************************************/
     this.ReformatLP = require("./Reformat");
 
-
-
-
-    /*************************************************************
+/*************************************************************
      * Method: solveNEOS
      * Scope: Public:
      * Dependency on jQuery
@@ -3251,7 +3231,7 @@ var Solver = function () {
             }
         }); 
     };
-
+    
      /*************************************************************
      * Method: MultiObjective
      * Scope: Public:
@@ -3292,24 +3272,16 @@ var Solver = function () {
     };
 };
 
-// Determine the environment we're in.
-// if we're in node, offer a friendly exports
-// otherwise, Solver's going global
-/* jshint ignore:start */
-
-(function(){
-    // If define exists; use it
-    if (typeof define === "function") {
-        define([], function () {
-            return new Solver();
-        });
-    } else if(typeof window === "object"){
-        window.solver = new Solver();
-    } else {
-        module.exports =  new Solver();
-    }
-})()
-
-/* jshint ignore:end */
+// If the project is loading through require.js, use `define` and exit
+if (typeof define === "function") {
+    define([], function () {
+        return new Solver();
+    });
+// If the project doesn't see define, but sees window, put solver on window
+} else if(typeof window === "object"){
+    window.solver = new Solver();
+}
+// Ensure that its available in node.js env
+module.exports = new Solver();
 
 },{"./Model":1,"./Polyopt":2,"./Reformat":3,"./Tableau/branchAndCut":8,"./Tableau/index.js":12,"./Validation":16,"./expressions.js":17}]},{},[18]);

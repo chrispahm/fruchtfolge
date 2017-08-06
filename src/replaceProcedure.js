@@ -10,9 +10,9 @@ function replaceProcedure (e) {
 			trArray.push(trList[i]);
 		}
 		var index = trArray[0].rowIndex - 2;
-		var groupId = trList[0].getAttribute('name').split(';')[0];
-		var procedureId = trList[0].getAttribute('name').split(';')[1];
-		var combinationId = trList[0].getAttribute('name').split(';')[2];
+		var groupId = trArray[0].getAttribute('name').split(';')[0];
+		var procedureId = trArray[0].getAttribute('name').split(';')[1];
+		var combinationId = trArray[0].getAttribute('name').split(';')[2];
 		// if procedure contains of more than 1 step, the combination names are combined
 		// in order to be found accordingly
 		var groupName, procedureName, combinationName, amountName, workingWidthName;

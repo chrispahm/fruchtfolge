@@ -183,9 +183,13 @@ function varMechCost(data) {
 	        var target = e.target.parentElement.nextSibling;
 
 	        if( target.classList.contains('hide')) {
+	        	e.target.classList.remove('mechTableExpand');
+               	e.target.classList.add('mechTableCollaps');
 	            target.classList.remove('hide');
 	        }
 	        else {
+	        	e.target.classList.remove('mechTableCollaps');
+                e.target.classList.add('mechTableExpand');
 	            target.classList.toggle('hide');
 	        }
 	    }
@@ -212,7 +216,8 @@ function varMechCost(data) {
     	var td0 = document.createElement('TD')
 
         td0.appendChild(document.createTextNode(content[0]));
-        td0.style.padding = '0px 0px 0px 10px'
+        td0.style.padding = '0px 0px 0px 10px';
+        if (content[0] === 'Variable Maschinenkosten') td0.classList.add('mechTableExpand');
         //td0.style.width = '198px'
         tr.appendChild(td0);
 

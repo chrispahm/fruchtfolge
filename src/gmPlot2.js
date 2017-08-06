@@ -117,7 +117,7 @@ function gmPlot() {
 				})
 			});
 
-			new PouchDB('http://v-server-node.ilb.uni-bonn.de:5984' + '/procedures2').bulkGet(requests
+			new PouchDB(couchPath + '/procedures2').bulkGet(requests
 			).then(function (results) {
 				var resultAll = calcGM(allPlotsCropsIds);
 				var resultSolver = calcGM(plotsCropsIds);

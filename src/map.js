@@ -197,8 +197,10 @@ function drawCropPage() {
                 var regionDiv = document.createElement('div');
                 var regionEintrag = document.createElement('h2');
                 var regionFelderDiv = document.createElement('div');
-                regionFelderDiv.className = 'expand';
+                //regionFelderDiv.className = 'expand';
+                regionFelderDiv.classList.add('expand');
                 regionEintrag.innerHTML = result[index + 1].toUpperCase();
+                regionEintrag.classList.add('cropsExpand');
 
                 regions[index].forEach(function (plot) {
                   var regionFelder = document.createElement('p');
@@ -255,9 +257,13 @@ function drawCropPage() {
                     var target = x.nextSibling;
 
                     if( x.__toggle) {
+                        x.classList.remove('cropsExpand');
+                        x.classList.add('cropsCollaps');
                         target.style.height = target.scrollHeight+"px";
                     }
                     else {
+                        x.classList.remove('cropsCollaps');
+                        x.classList.add('cropsExpand');
                         target.style.height = 0;
                     }
                 }
@@ -481,7 +487,7 @@ function initialRegionFinder(fieldsFeatures, size) {
 // Notes:     Dependant on turf.js
 //---------------------------------------------------------
 function locationUrl (features) {
-  var url = 'http://open.mapquestapi.com/geocoding/v1/reverse?key=eoEN8KRKeFAMe9JR8UG53yw5Gh3XU9Ex&location=' + turf.centerOfMass(turf.featureCollection(features)).geometry.coordinates[1] + ',' + turf.centerOfMass(turf.featureCollection(features)).geometry.coordinates[0];
+  var url = 'https://open.mapquestapi.com/geocoding/v1/reverse?key=eoEN8KRKeFAMe9JR8UG53yw5Gh3XU9Ex&location=' + turf.centerOfMass(turf.featureCollection(features)).geometry.coordinates[1] + ',' + turf.centerOfMass(turf.featureCollection(features)).geometry.coordinates[0];
   //var url = 'https://nominatim.openstreetmap.org/reverse?lat=' + turf.centerOfMass(turf.featureCollection(features)).geometry.coordinates[1] + '&lon=' + turf.centerOfMass(turf.featureCollection(features)).geometry.coordinates[0] + '&format=json'; 
       return url
 }

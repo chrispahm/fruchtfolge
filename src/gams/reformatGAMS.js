@@ -74,53 +74,53 @@
 	    equations.objective.name = 'e_Objective';
 	    equations.objective.constraint = model.optimize + ' ' + ' =e= ' + objectiveConstraint + ' ;';
 
-
-	    // Loop through constraints, create one equation per constraint
+	    	    // Loop through constraints, create one equation per constraint
 	    for (var i = 0; i < constraintsCount.length; i++) {
-	        equations[[i]] = {};
-	        equations[[i]].name = 'e_' + constraintsCount[i];
-
 	        var constraintPath = model.constraints[constraintsCount[i]],
 	            constraintOperator,
-	            constraintProperty = Object.getOwnPropertyNames(constraintPath)[0];
+	            constraintProperty = Object.getOwnPropertyNames(constraintPath);
 
-	        switch (constraintProperty) {
-	            case 'max':
-	                constraintOperator = '=g=';
-	                break;
-	            case 'min':
-	                constraintOperator = '=l=';
-	                break;
-	            case 'equal':
-	                constraintOperator = '=e=';
-	                break;
-	            default:
-	                throw new Error("The objective for the constraint /'" + constraintsCount[i] + "/' is not compatible." +
-	                    " Check for typos in 'max', 'min' or 'equal'.");
-	        }
+	        constraintProperty.forEach(function (property, index) {
+	        	equations[constraintsCount[i] + index] = {};
+	        	equations[constraintsCount[i] + index].name = 'e_' + constraintsCount[i] + index;
 
-	        var constraintText = '';
+		        switch (property) {
+			            case 'max':
+			                constraintOperator = '=g=';
+			                break;
+			            case 'min':
+			                constraintOperator = '=l=';
+			                break;
+			            case 'equal':
+			                constraintOperator = '=e=';
+			                break;
+			            default:
+			                throw new Error("The objective for the constraint /'" + constraintsCount[i] + "/' is not compatible." +
+			                    " Check for typos in 'max', 'min' or 'equal'.");
+			        }
 
-	        // Loop through variables to multiply with equations
-	        for (var j = 0; j < variablesCount.length; j++) {
-	            variablesPath = model.variables[variablesCount[j]];
+			        var constraintText = '';
 
-	            if (constraintText === '') {
-	            	start = ' ';
-	        	} else {
-	        		start = ' + ';
-	        	}
+			        // Loop through variables to multiply with equations
+			        for (var j = 0; j < variablesCount.length; j++) {
+			            variablesPath = model.variables[variablesCount[j]];
 
-	            if (constraintsCount[i] in variablesPath) {
-	                constraintText += start + variablesCount[j] + ' * ' + "(" + variablesPath[constraintsCount[i]].toFixed(2) + ")";
-	            }
-	        }
-	        //if (constraintText !== '') {
-				equations[[i]].constraint = "(" + constraintPath[constraintProperty].toFixed(2) + ")" + ' ' + constraintOperator +
-	            	constraintText + ' ;';
-	        //}
+			            if (constraintText === '') {
+			            	start = ' ';
+			        	} else {
+			        		start = ' + ';
+			        	}
+
+			            if (constraintsCount[i] in variablesPath) {
+			                constraintText += start + variablesCount[j] + ' * ' + "(" + variablesPath[constraintsCount[i]].toFixed(2) + ")";
+			            }
+			        }
+			        //if (constraintText !== '') {
+						equations[constraintsCount[i] + index].constraint = "(" + constraintPath[property].toFixed(2) + ")" + ' ' + constraintOperator +
+			            	constraintText + ' ;';
+			        //}
+		        });
 	    }
-
 
 	    // Create GAMS input file - YAY
 	    var GAMSinput = '';
@@ -176,15 +176,12 @@
 	    // add equations
 	    var eqsCount = Object.keys(equations);
 	    GAMSinput += 'Equation  \n';
-	    for (var i = 0; i < eqsCount.length; i++) {
-	    	//if (equations[eqsCount[i]].constraint) {
-				comma = ', ';
-		        if (i === eqsCount.length - 1) {
-		            comma = '';
-		        }
-		        GAMSinput += equations[eqsCount[i]].name + comma + '\n  ';
-	    	//}
-	    }
+	    eqsCount.forEach(function (equation, index) {
+	    	comma = ', ';
+	    	if (index === eqsCount.length -1) comma = '';
+	    	GAMSinput += equations[equation].name + comma + '\n  ';
+	    })
+
 	    GAMSinput += '; \n\n';
 
 	    // add constraints
@@ -215,7 +212,6 @@
 	    GAMSinput = GAMSinput.replace(/Ö/, "Oe");
 	    GAMSinput = GAMSinput.replace(/Ä/, "Ae");
 
-	    //console.log(GAMSinput)
 	    return GAMSinput;
 
 	}

@@ -21,9 +21,13 @@ function createModel() {
 			
 			// get total ha size
           	var totalHa = 0;
+          	// number of fields
+          	var noFields = 0;
+
           	Object.keys(fields).forEach(function (plot) {
           		if (fields[plot].size) {
           			totalHa += Number(fields[plot].size);
+          			noFields ++;
           		}
           	})
 
@@ -32,18 +36,9 @@ function createModel() {
 	            "optimize": "gm",
 	            "opType": "max",
 	            "constraints": {
-	            	"efa": {
-	            		"min": totalHa * 0.05
-	            	},
-	            	[toHex("Mais").substring(0,8)]: {
-	            		"min": 50
-	            	},
-	            	[toHex("Acker-/Puff-/Pferdebohne").substring(0,8)]: {
-	            		"min": 20
-	            	},
-	            	[toHex("Winterweizen").substring(0,8)]: {
-	            		"min": 30
-	            	}
+	            	//"efa": {
+	            	//	"min": totalHa * 0.05
+	            	//}
 	            },
 	            "variables": {},
 	            "ints": {},
@@ -52,7 +47,35 @@ function createModel() {
           	// ----------------------------------
           	// add constraints
           	// ----------------------------------
-          	
+          	var cropAssignment = {};
+          	//var constraintsObj = {};
+          	Object.keys(crops).forEach(function (crop, index) {
+          		cropAssignment[crop] = {
+          			'name': 'c' + index + 'c',
+          			'const': []
+          		}
+          	})
+
+          	constraints.array.forEach(function (constraint) {
+          		// create string combining the crop constraints
+          		var string = '';
+          		constraint[0].forEach(function (crop) {
+          			string += cropAssignment[crop].name;
+          		});
+          		// add constraints to according crop constraint array
+          		constraint[0].forEach(function (crop) {
+          			cropAssignment[crop].const.push([string, constraint[1], constraint[2]])
+          		});
+          		// add constraint to model
+      		    if (!model.constraints[string]) {
+      				model.constraints[string] = {};
+      				model.constraints[string][constraint[1]] = constraint[2];
+      			}
+      			else {
+      				model.constraints[string][constraint[1]] = constraint[2];
+      			}
+          	});
+
           	// ----------------------------------
           	// create model
           	// ----------------------------------
@@ -76,16 +99,21 @@ function createModel() {
           				"field": plot,
           				"crop": crop
           			}
-
+          			// add variables per field
           			model.variables[abbCombi] = {
           				[abbField]: 1,
-          				[toHex(crop).substring(0,8)]: fields[plot].size,
+          				//[toHex(crop).substring(0,8)]: fields[plot].size,
           				"efa": crops[crop].efaFactor * fields[plot].size,
           				"gm": gmPlot[plot][crop].gmTot
           			}
+          			// add crop variables from cropAssignment object
+          			cropAssignment[crop].const.forEach(function (constraint) {
+          				model.variables[abbCombi][constraint[0]] = fields[plot].size;
+          			})
 
           			model.binaries[abbCombi] = 1;
 
+          			/*
           			if (!model.constraints[toHex(crop).substring(0,8)]) {
           				model.constraints[toHex(crop).substring(0,8)] = {
           					'max': crops[crop].maxShare * totalHa
@@ -94,18 +122,30 @@ function createModel() {
           			else {
           				model.constraints[toHex(crop).substring(0,8)].max = crops[crop].maxShare * totalHa;
           			}
-          			
+          			*/
           		});
           	});
-          	//console.log(model)
-          	return Promise.all([solver.solveNEOS(model, 0, elem), 
-          						Promise.resolve(assign), 
-          						Promise.resolve(gmPlot),
-          						Promise.resolve(fields),
-          						Promise.resolve(crops),
-          						Promise.resolve(totalHa),
-          						Promise.resolve(gmPlotAll),
-          						])
+
+          	if (noFields > 18) {
+				return Promise.all([solver.solveNEOS(model, 0, elem), 
+      						Promise.resolve(assign), 
+      						Promise.resolve(gmPlot),
+      						Promise.resolve(fields),
+      						Promise.resolve(crops),
+      						Promise.resolve(totalHa),
+      						Promise.resolve(gmPlotAll),
+      						])
+          	}
+          	else {
+				return Promise.all([Promise.resolve(solver.Solve(model)), 
+      						Promise.resolve(assign), 
+      						Promise.resolve(gmPlot),
+      						Promise.resolve(fields),
+      						Promise.resolve(crops),
+      						Promise.resolve(totalHa),
+      						Promise.resolve(gmPlotAll),
+      						])
+          	}
           	//.then(function(result){
 			//	resolve(result)
 			//})

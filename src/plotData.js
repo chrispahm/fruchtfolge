@@ -30,7 +30,7 @@ function plotData () {
 
 			const start = turf.centerOfMass(plotObject.polygon).geometry.coordinates;
 			const end = info.homeCoords;
-			const distance = get('http://router.project-osrm.org/route/v1/driving/' + start + ';' + end + '?overview=false')
+			const distance = get('https://router.project-osrm.org/route/v1/driving/' + start + ';' + end + '?overview=false')
 			.then(JSON.parse);
 
 			return Promise.all([sqr, soilType, distance])

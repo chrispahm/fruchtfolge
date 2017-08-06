@@ -99,7 +99,7 @@ function createCroppingPage () {
 		});
 
 		function createCrops(data) {
-			var db = new PouchDB(couchPath + 'crops');
+			var db = new PouchDB(couchPath + '/crops');
 			if (requests.docs.length === 0) return Promise.resolve();
 
 			return db.bulkGet(requests).then(function (docs) {
@@ -202,7 +202,7 @@ function createCroppingPage () {
 	})
 }).then(function () {
 	var db = new PouchDB(couchPath + '/recommendations');
-	console.log('machCombiObject')
+	//console.log('machCombiObject')
 	return db.get('machCombiObject').then(function (doc) {
 		machCombiObject = doc;
 		return Promise.resolve()
@@ -427,7 +427,23 @@ function createCroppingPage () {
 					checkbox.style.display = 'inline-block';
 					checkbox.value = subseqCrop;
 					checkbox.id = 'subseqCrop/' + subseqCrop;
-					//checkbox.checked = true;
+					checkbox.onclick = function () {
+						if (this.checked) {
+							profile.get('crops').then(function (data) {
+								data[item].subseqCrops.push(subseqCrop);
+								return profile.put(data);
+							});
+						}
+						else {
+							profile.get('crops').then(function (data) {
+								var cropIndex = data[item].subseqCrops.indexOf(subseqCrop);
+								if (cropIndex > -1) {
+									data[item].subseqCrops.splice(cropIndex, 1);
+									return profile.put(data);
+								}
+							});
+						}
+					};
 
 					var label = document.createElement('label')
 					label.htmlFor = 'subseqCrop/' + subseqCrop;
@@ -503,14 +519,14 @@ function createCroppingPage () {
 				               // update db
 				               profile.get('crops').then(function (docs) {
 				               	var number = textfeld.value.replace('%','').replace( /^\D+/g, '');
-				               	console.log(number)
+				               	//console.log(number)
 				               	if (setting == 'maxShare') {
 				               		docs[item][setting] = number / 100;
 				               	}
 				          		else {
-				          			console.log(docs[item][setting])
+				          			//console.log(docs[item][setting])
 				          			docs[item][setting] = Number(number);
-				          			console.log(docs[item][setting])
+				          			//console.log(docs[item][setting])
 				          		} 
 				               		return profile.put(docs);
 				               })
@@ -536,24 +552,49 @@ function createCroppingPage () {
 					var element = e.target;
 					var cropTables = document.getElementById('tabelle').childNodes;
 					//console.log(cropTables)
-					cropTables.forEach(function (tableNode) {
-						if (tableNode.classList.contains(element.innerHTML)) {
-							tableNode.style.display = 'block';
+					//cropTables.forEach(function (tableNode) {
+					for (var i = 0; i < cropTables.length; i++) {
+						if (cropTables[i].classList.contains(element.innerHTML)) {
+							cropTables[i].style.display = 'block';
 						}
 						else {
-							tableNode.style.display = 'none';
+							cropTables[i].style.display = 'none';
 						}
-					});
+					}
+					//	if (tableNode.classList.contains(element.innerHTML)) {
+					//		tableNode.style.display = 'block';
+					//	}
+					//	else {
+					//		tableNode.style.display = 'none';
+					//	}
+					//});
 					var cropInfo = document.getElementById('subseqCrops').childNodes;
-					cropInfo.forEach(function (elem) {
+					for (var i = 0; i < cropInfo.length; i++) {
+						if (cropInfo[i].classList.contains(element.innerHTML)) {
+							cropInfo[i].style.display = 'block';
+						}
+						else {
+							cropInfo[i].style.display = 'none';
+						}
+					}
+					/*cropInfo.forEach(function (elem) {
 						if (elem.classList.contains(element.innerHTML)) {
 							elem.style.display = 'block';
 						}
 						else {
 							elem.style.display = 'none';
 						}
-					});
+					}); */
 					var cropInfo2 = document.getElementById('subseqCropsRight').childNodes;
+					for (var i = 0; i < cropInfo2.length; i++) {
+						if (cropInfo2[i].classList.contains(element.innerHTML)) {
+							cropInfo2[i].style.display = 'block';
+						}
+						else {
+							cropInfo2[i].style.display = 'none';
+						}
+					}
+					/*
 					cropInfo2.forEach(function (elem) {
 						if (elem.classList.contains(element.innerHTML)) {
 							elem.style.display = 'block';
@@ -561,7 +602,7 @@ function createCroppingPage () {
 						else {
 							elem.style.display = 'none';
 						}
-					});
+					}); */
 					var cropClicked = document.getElementsByTagName('h2');
 			        for (var j = 0; j < cropClicked.length; j++) {
 			            if (cropClicked[j].classList.contains('clicked')) {

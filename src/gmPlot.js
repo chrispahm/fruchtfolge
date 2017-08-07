@@ -17,6 +17,7 @@ function gmPlot() {
 			var requestArray = [];
 			var requests = {docs: []};
 			var plotsCropsIds = [];
+			var allPlotsCropsIds = [];
 
 			// get possible subsequent crops per plot
 			fields.forEach(function (field) {
@@ -67,7 +68,8 @@ function gmPlot() {
 				var distance = getValue(fieldsObject[field].distance, [1,2,3,4,5,6,10,15,20,30]);
 				var resistance = soilTypes[fieldsObject[field].soilType]
 
-				possibleCrops.forEach(function (crop) {
+				Object.keys(crops).forEach(function (crop) {
+					if (crop == '_rev' || crop == '_id') return
 					var ids = [];
 					crops[crop].procedures.forEach(function (procedure) {
 						var idString = '';
@@ -108,92 +110,99 @@ function gmPlot() {
 							requests.docs.push({id: idString});
 						}
 					})
-					plotsCropsIds.push([field,crop, ids, fieldsObject[field].size, fieldsObject[field].distance])
+					if (subseqCrops.indexOf(crop) > -1) {
+						plotsCropsIds.push([field,crop, ids, fieldsObject[field].size, fieldsObject[field].distance])
+					}
+					allPlotsCropsIds.push([field,crop, ids, fieldsObject[field].size, fieldsObject[field].distance])
 				})
 			});
 
-			new PouchDB('http://v-server-node.ilb.uni-bonn.de:5984' + '/procedures2').bulkGet(requests
+			new PouchDB(couchPath + '/procedures2').bulkGet(requests
 			).then(function (results) {
-				var plotsCropsGM = {};
+				var resultAll = calcGM(allPlotsCropsIds);
+				var resultSolver = calcGM(plotsCropsIds);
 
-				plotsCropsIds.forEach(function (combi) {
-					var plot = combi[0];
-					var crop = combi[1];
-					var ids = combi[2];
-					var size = combi[3];
-					var distance = combi[4];
+				function calcGM (input) {
+					var plotsCropsGM = {};
+					input.forEach(function (combi) {
+						var plot = combi[0];
+						var crop = combi[1];
+						var ids = combi[2];
+						var size = combi[3];
+						var distance = combi[4];
 
-					// adjust yield to sqr in future
-					var revenue = Number(crops[crop].yield) * Number(crops[crop].price);
-					var directCosts = Number(crops[crop].variableCosts);
-					var machCosts = calcMachineCosts(ids);
-					var variableCosts = (directCosts + machCosts + (machCosts / 12 * 3 * 0.03));
+						// adjust yield to sqr in future
+						var revenue = Number(crops[crop].yield) * Number(crops[crop].price);
+						var directCosts = Number(crops[crop].variableCosts);
+						var machCosts = calcMachineCosts(ids);
+						var variableCosts = (directCosts + machCosts + (machCosts / 12 * 3 * 0.03));
 
-					// calculate workload
-					//var workLoad = calcWorkLoad(ids);
-					
-					if (plotsCropsGM[plot]) {
-						if (plotsCropsGM[plot][crop]) {
-							write();
+						// calculate workload
+						//var workLoad = calcWorkLoad(ids);
+						
+						if (plotsCropsGM[plot]) {
+							if (plotsCropsGM[plot][crop]) {
+								write();
+							}
+							else {
+								plotsCropsGM[plot][crop] = {};
+								write();
+							}
 						}
 						else {
+							plotsCropsGM[plot] = {};
 							plotsCropsGM[plot][crop] = {};
 							write();
 						}
-					}
-					else {
-						plotsCropsGM[plot] = {};
-						plotsCropsGM[plot][crop] = {};
-						write();
-					}
-					function write() {
-						plotsCropsGM[plot][crop].gm = revenue - variableCosts;
-						plotsCropsGM[plot][crop].gmTot = (revenue - variableCosts) * Number(size);
-						plotsCropsGM[plot][crop].revenue = revenue;
-						plotsCropsGM[plot][crop].variableCosts = variableCosts;
-						plotsCropsGM[plot][crop].directCosts = directCosts;
-						//plotsCropsGM[plot][crop].size = size;
-						//plotsCropsGM[plot][crop].distance = distance;
-					}
-					function calcMachineCosts(ids) {
-						var costs = 0;
+						function write() {
+							plotsCropsGM[plot][crop].gm = revenue - variableCosts;
+							plotsCropsGM[plot][crop].gmTot = (revenue - variableCosts) * Number(size);
+							plotsCropsGM[plot][crop].revenue = revenue;
+							plotsCropsGM[plot][crop].variableCosts = variableCosts;
+							plotsCropsGM[plot][crop].directCosts = directCosts;
+							//plotsCropsGM[plot][crop].size = size;
+							//plotsCropsGM[plot][crop].distance = distance;
+						}
+						function calcMachineCosts(ids) {
+							var costs = 0;
 
-						ids.forEach(function (id, no) {
-							var index = requestArray.indexOf(id);
-							if (index > -1 && results.results[index].docs[0].ok) {
-								var procedure = results.results[index].docs[0].ok;
+							ids.forEach(function (id, no) {
+								var index = requestArray.indexOf(id);
+								if (index > -1 && results.results[index].docs[0].ok) {
+									var procedure = results.results[index].docs[0].ok;
 
-								procedure.steps.forEach(function (step) {
-									// As KTBL calculates with a dieselprice of 0.7 Euro, the price was increased to 1.162,
-									// then deducted by the tax reduction of 214.8 Euro / 1000 liter -> efficte price 0.9472
-									// source ADAC dieselprice
-									// https://www.adac.de/infotestrat/tanken-kraftstoffe-und-antrieb/kraftstoffpreise/kraftstoff-durchschnittspreise/default.aspx
-									// source tax reduction, Energiesteuergesetz (EnergieStG) § 57 Steuerentlastung für Betriebe der Land- und Forstwirtschaft
-									// https://www.gesetze-im-internet.de/energiestg/__57.html
-									//costs += Number(step.maintenance) + Number(step.lubricants);
-									var lubricants = Number(step.fuelCons) * 0.9472;
-									if (lubricants == 0) lubricants = Number(step.lubricants)
-									costs += Number(step.maintenance) + lubricants;
-								});
-							}
-							else {
-								var procedure = crops[crop].procedures[no].steps.forEach(function (step) {
-									//costs += Number(step.maintenance) + Number(step.lubricants) + Number(step.services);
-									var lubricants = Number(step.fuelCons) * 0.9472;
-									if (lubricants == 0) lubricants = Number(step.lubricants)
-									costs += Number(step.maintenance) + lubricants + Number(step.services);
-								});
-							}
-						});
-						return costs;
-					}
-
-					//function calcWorkLoad(ids, no) {
+									procedure.steps.forEach(function (step) {
+										// As KTBL calculates with a dieselprice of 0.7 Euro, the price was increased to 1.162,
+										// then deducted by the tax reduction of 214.8 Euro / 1000 liter -> efficte price 0.9472
+										// source ADAC dieselprice
+										// https://www.adac.de/infotestrat/tanken-kraftstoffe-und-antrieb/kraftstoffpreise/kraftstoff-durchschnittspreise/default.aspx
+										// source tax reduction, Energiesteuergesetz (EnergieStG) § 57 Steuerentlastung für Betriebe der Land- und Forstwirtschaft
+										// https://www.gesetze-im-internet.de/energiestg/__57.html
+										//costs += Number(step.maintenance) + Number(step.lubricants);
+										var lubricants = Number(step.fuelCons) * 0.9472;
+										if (lubricants == 0) lubricants = Number(step.lubricants)
+										costs += Number(step.maintenance) + lubricants;
+									});
+								}
+								else {
+									var procedure = crops[crop].procedures[no].steps.forEach(function (step) {
+										//costs += Number(step.maintenance) + Number(step.lubricants) + Number(step.services);
+										var lubricants = Number(step.fuelCons) * 0.9472;
+										if (lubricants == 0) lubricants = Number(step.lubricants)
+										costs += Number(step.maintenance) + lubricants + Number(step.services);
+									});
+								}
+							});
+							return costs;
+						}
+					})
+					return plotsCropsGM;
+				}		
+				//function calcWorkLoad(ids, no) {
 
 					//}
-				})
 
-				resolve(plotsCropsGM);
+				resolve([resultSolver, resultAll]);
 				//console.log(results)
 
 

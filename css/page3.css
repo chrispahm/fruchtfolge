@@ -23,6 +23,42 @@ button:focus {
     outline: none;
 }
 
+.clicked {
+  background-color: #E0E0E0;
+}
+#LeisteCrops {
+  position: fixed;
+  padding-top: 20px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  top: 70px;
+  right: 0px;
+  width: 250px;
+  cursor: default;
+  height: calc(100vh - 70px);
+  background: #ececec;
+  z-index: 94;
+}
+
+#LeisteCrops h2 {
+  font-size: 18px;
+  letter-spacing: 0.2em;
+  margin-bottom: 5px;
+  margin-top: 5px; 
+  padding-left: 30px;
+  font-weight: normal;
+}
+
+.expand{
+    height: 0;
+    overflow: hidden;
+    transition: height 0.8s ease;
+}
+
+.hide {
+    display: none; 
+}
+
 .button-menu {
   display: block;
   position: fixed;
@@ -60,13 +96,23 @@ button:focus {
 
 
 #tabelle {
+  /*
 	float: left;
-/*	position: fixed; */
+/*	position: fixed; 
 	height: 100%;
-	font-size: 14pt !important;
+	font-size: 12pt !important;
 	margin-left: 50px;
 	margin-top: 110px;
-
+  width: calc(100vw - 350px); 
+  */
+    display: -webkit-box;
+    float: left;
+    /* position: fixed; */
+    height: 100%;
+    font-size: 12pt !important;
+    margin-left: 20px;
+    margin-top: 20px;
+    margin-right: 20px;
 }
 
 #canvas-holder{
@@ -89,12 +135,44 @@ button:focus {
 }
 
 table { 
-	font-size: 12pt;
+	/*font-size: 12pt; */
 	border-collapse: collapse;
   table-layout: fixed;
+  width: 100%;
 }
 
+.table td {
+  white-space: nowrap;
+  overflow-wrap: break-word;
+  word-wrap: break-word; 
+  /*text-overflow: ellipsis; 
+  overflow: hidden;*/
+}
 
+.table td {
+  white-space: nowrap;
+  /*text-overflow: ellipsis; 
+  overflow: hidden;*/
+}
+
+.table-small {
+  width: 6%;
+  overflow-wrap: break-word;
+  word-wrap: break-word; 
+}
+
+.table-medium {
+  width: 9.33%;
+  overflow-wrap: break-word;
+  word-wrap: break-word; 
+}
+
+.table-desc {
+  width: 25%;
+  overflow-wrap: break-word;
+  word-wrap: break-word; 
+}
+/*
 thead {
 	width: auto;
 	display: block;
@@ -107,12 +185,7 @@ tbody {
 	height: calc(100vh - 170px);
 	overflow: auto;
 }
-td {
-    display: inline-block;
-    word-wrap: break-word;
-    white-space: nowrap;     /* Renamed property in CSS3 draft spec */
-}
-
+*/
 td input {
 	font-family: 'open_sanscondensed_light', sans-serif;
 	font-size: 14pt;
@@ -121,6 +194,7 @@ td input {
 th {
 	padding: 10px;
 	font-family: 'open_sanscondensed_light', sans-serif;
+  word-wrap: break-word;
 	background: #79ae98;
 	color: #fff;
 	letter-spacing: 0.05em;
@@ -135,7 +209,8 @@ tr:nth-child(odd) {
 	background: #ECECEC;
 	height: 30px;
 }
-
+/*
 th:first-child {
 	width: 180px;
 }
+*/

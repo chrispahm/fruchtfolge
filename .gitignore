@@ -1,5 +1,6 @@
 
 DBbackup/
+src/deprec
 public/
 prod/
 server.js

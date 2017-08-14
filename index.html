@@ -30,6 +30,7 @@
 	<script type="text/javascript" src="src/gmPlot.js"></script>
 	<script type="text/javascript" src="src/model.js"></script>
 	<script type="text/javascript" src="src/createChart.js"></script>
+  <script type="text/javascript" src="src/createLineChart.js"></script>
 	<script src="src/lib/Chart.bundle.min.js"></script>
 	<script src="src/lib/ObjTree.js"></script>
 	<script src="src/lib/proj4.js"></script>
@@ -245,8 +246,12 @@
 	<div id="wrapper">
 		<div id="tabelle-results"></div>
 		<div id="canvas-holder">
-			<canvas id="chart-area" />
-		</div>
+      <canvas id="chart-area" /></div>
+    <div id="canvas-line">
+    	<div id="line-wrapper">
+    		<canvas id="linechart" />
+    	</div>
+    </div>
 	</div>
 
 	<div id='mapResults'>

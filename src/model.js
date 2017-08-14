@@ -1,7 +1,7 @@
 function createModel() {
 	return new Promise(function (resolve, reject) {
 		// recreate initial html state
-		document.getElementById('page6').innerHTML = "<div id='wrapper'> <div id='tabelle-results'></div> <div id='canvas-holder'> <canvas id='chart-area' /> </div> </div> <div id='mapResults'> <h2 style='margin-left: 40px'>KARTE</h2> <div id='crop-legend' class='legend'> <h4>Anbaukulturen</h4> </div> </div>";
+		document.getElementById('page6').innerHTML = "<div id='wrapper'> <div id='tabelle-results'></div> <div id='canvas-holder'> <canvas id='chart-area' /></div> <div id='canvas-line'> <div id='line-wrapper'> <canvas id='linechart' /> </div> </div> </div> <div id='mapResults'> <h2 style='margin-left: 40px'>KARTE</h2> <div id='crop-legend' class='legend'> <h4>Anbaukulturen</h4> </div> </div>";
 		Promise.all([gmPlot(), profile.bulkGet({
 				docs: [
 					{id: 'fields'},
@@ -84,11 +84,13 @@ function createModel() {
           	// create basic model with all crop options per plot. Only 1 crop possible per plot
           	Object.keys(gmPlot).forEach(function (plot, indexPlot) {
           		//var abbField = 'f'+ toHex(plot).substring(0,4);
+          		if (plot == "1013") console.log(indexPlot)
           		var abbField = 'f' + indexPlot;
           		model.constraints[abbField] = {'max': 1};
           		//model.constraints[abbField] = {'min': 1};
 
           		Object.keys(gmPlot[plot]).forEach(function (crop, indexCrop) {
+          			if (plot == '1013') console.log(crop)
           			var abbCrop = 'c' + indexCrop;
           			var abbCombi = abbField + abbCrop
           			//var abbCombi = "f" + toHex(plot).substring(0,4) + 'c' + toHex(crop).substring(0,4);
@@ -125,6 +127,7 @@ function createModel() {
           			*/
           		});
           	});
+          	console.log(model)
 
           	if (noFields > 18) {
 				return Promise.all([solver.solveNEOS(model, 0, elem), 
@@ -214,6 +217,8 @@ function createModel() {
 			var crops = res[7];
 			var gmPlotAll =res[8];
 
+			// time variables
+			var timePrev, timeCur;
 			var tableDiv = document.getElementById("tabelle-results");
 		    var table = document.createElement('TABLE');
 		    var tableHead = document.createElement('THEAD');
@@ -244,6 +249,10 @@ function createModel() {
     			var th = document.createElement('TH');
     			th.appendChild(document.createTextNode(cell));
     			if (index === 0) th.style.width = '180px';
+    			else if (index === 1) th.style.width = '66px';
+    			else if (index === 2) th.style.width = '98px';
+    			else if (index === 3) th.style.width = '128px';
+    			else if (index === 4) th.style.width = '148px';
     			tr.appendChild(th);
     		});
 
@@ -273,17 +282,50 @@ function createModel() {
     		// total GM of previous year
     		createTD((function () {
     			var gm = 0;
+    			var time = [];
+				timePrev = [];
+				//console.log(timePeriod)
+				for (var i = 0; i <= 1; i++) {
+					time.push({JAN1: 0, JAN2: 0, FEB1: 0, FEB2: 0, MRZ1: 0, MRZ2: 0, APR1: 0, APR2: 0, MAI1: 0, MAI2: 0, JUN1: 0, JUN2: 0, JUL1: 0, JUL2: 0, AUG1: 0, AUG2: 0, SEP1: 0, SEP2: 0, OKT1: 0, OKT2: 0, NOV1: 0, NOV2: 0, DEZ1: 0, DEZ2: 0 })
+					timePrev.push({JAN: 0, FEB: 0, MRZ: 0, APR: 0, MAI: 0, JUN: 0, JUL: 0, AUG: 0, SEP: 0, OKT: 0, NOV: 0, DEZ: 0})
+				}
     			Object.keys(fields).forEach(function (plot) {
-    				if (fields[plot]['2016'] && crops[fields[plot]['2016']]) gm += gmPlotAll[plot][fields[plot]['2016']].gmTot;
+    				if (fields[plot]['2016'] && crops[fields[plot]['2016']]) {
+    					// add field gross margin to total gross margin
+    					gm += gmPlotAll[plot][fields[plot]['2016']].gmTot;
+    					// add time to total time
+    					gmPlotAll[plot][fields[plot]['2016']].time.forEach(function (obj, yrIndex) {
+    						Object.keys(obj).forEach(function (key) {
+    							timePrev[yrIndex][key] += Number(obj[key].toFixed(2));
+    						});
+    					});
+    				}
     			});
+    			//console.log(time2)
     			return gm.toFixed(1);
     		})(), trSum, 'center');
     		// total GM of this year
     		createTD((function () {
     			var gm = 0;
+    			var time = [];
+				timeCur = [];
+				//console.log(timePeriod)
+				for (var i = 0; i <= 1; i++) {
+					time.push({JAN1: 0, JAN2: 0, FEB1: 0, FEB2: 0, MRZ1: 0, MRZ2: 0, APR1: 0, APR2: 0, MAI1: 0, MAI2: 0, JUN1: 0, JUN2: 0, JUL1: 0, JUL2: 0, AUG1: 0, AUG2: 0, SEP1: 0, SEP2: 0, OKT1: 0, OKT2: 0, NOV1: 0, NOV2: 0, DEZ1: 0, DEZ2: 0 })
+					timeCur.push({JAN: 0, FEB: 0, MRZ: 0, APR: 0, MAI: 0, JUN: 0, JUL: 0, AUG: 0, SEP: 0, OKT: 0, NOV: 0, DEZ: 0})
+				}
     			Object.keys(fields).forEach(function (plot) {
-    				if (cropAlloc[plot]) gm += cropAlloc[plot][cropAlloc[plot].crop];
+    				if (cropAlloc[plot]) {
+    					gm += cropAlloc[plot][cropAlloc[plot].crop];
+    					// add time to total time
+    					gmPlotAll[plot][cropAlloc[plot].crop].time.forEach(function (obj, yrIndex) {
+    						Object.keys(obj).forEach(function (key) {
+    							timeCur[yrIndex][key] += Number(obj[key].toFixed(2));
+    						});
+    					});
+    				}
     			});
+    			//console.log(time2)
     			return gm.toFixed(1);
     		})(), trSum, 'center');
 
@@ -291,6 +333,7 @@ function createModel() {
     		tableDiv.appendChild(table);
 
     		var cropColor = createChart(cropSum);
+    		var lineChart = addLineChart(timePrev, timeCur);
 
 		    var spalte0 = document.getElementById("tabelle-results").getElementsByTagName("table")[0].rows[0].cells
 		    var spalte1 = document.getElementById("tabelle-results").getElementsByTagName("table")[0].rows

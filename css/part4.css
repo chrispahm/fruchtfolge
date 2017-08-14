@@ -413,3 +413,27 @@ body {
     background-position: 50% 50%;
     background-repeat: no-repeat;
 }
+
+#linechart {
+    display: block;
+    position: relative;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#canvas-line {
+    overflow: hidden;
+    margin-top: 60px;
+}
+
+#line-wrapper {
+    position: relative;
+    width: 500px;
+    height: 400px;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: auto;
+    margin-right: auto;
+}

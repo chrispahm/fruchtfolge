@@ -75,6 +75,13 @@ function varMechCost(data) {
 					});
 					select.classList.toggle('monthDropDown');
 					select.style.background = backgroundColour;
+					select.onchange = function (e){
+						var value = e.target.value;
+						profile.get('crops').then(function (document) {
+							document[item].procedures[index].month = value
+							return profile.put(document);
+						})
+					}
 					td.appendChild(select);
 				}
 				else {

@@ -18,6 +18,7 @@ function gmPlot() {
 			var requests = {docs: []};
 			var plotsCropsIds = [];
 			var allPlotsCropsIds = [];
+			var timePeriod = 0;
 
 			// get possible subsequent crops per plot
 			fields.forEach(function (field) {
@@ -63,23 +64,44 @@ function gmPlot() {
 						possibleCrops.push(option)
 					}
 				});
-
+				if (field == '1013') console.log(possibleCrops);
 				var size = getValue(fieldsObject[field].size, [1,2,5,10,20,40,80]);
 				var distance = getValue(fieldsObject[field].distance, [1,2,3,4,5,6,10,15,20,30]);
-				var resistance = soilTypes[fieldsObject[field].soilType]
+				var resistance = soilTypes[fieldsObject[field].soilType];
 
 				Object.keys(crops).forEach(function (crop) {
 					if (crop == '_rev' || crop == '_id') return
 					var ids = [];
-					crops[crop].procedures.forEach(function (procedure) {
+					var yearCount = 0;
+
+					crops[crop].procedures.forEach(function (procedure, prodIndex) {
 						var idString = '';
 						var groupId = procedure.group;
-						if (groupId == -1) return
+						//if (groupId == -1) return
 						var procedureId = procedure.procedure;
 						var combinationId = procedure.combination;
+						var months = ["JAN1", "JAN2", "FEB1", "FEB2", "MRZ1", "MRZ2", "APR1", "APR2", "MAI1", "MAI2", "JUN1", "JUN2", "JUL1", "JUL2", "AUG1", "AUG2", "SEP1", "SEP2", "OKT1", "OKT2", "NOV1", "NOV2", "DEZ1", "DEZ2"];
 						
-						if (typeof machCombiIds[groupId][procedureId] == 'undefined' || typeof machCombiIds[groupId][procedureId][combinationId] == 'undefined' ) {
+						// Check in which year the procedure is
+						if (crops[crop].procedures[prodIndex + 1] && months.indexOf(procedure.month) <= months.indexOf(crops[crop].procedures[prodIndex + 1].month)) {
+							crops[crop].procedures[prodIndex].year = yearCount;
+						}
+						else if (crops[crop].procedures[prodIndex + 1]) {
+							yearCount++;
+							//console.log(procedure.month, " ", crops[crop].procedures[prodIndex + 1].month, " ", yearCount);
+							crops[crop].procedures[prodIndex].year = yearCount;
+						}
+						else {
+							crops[crop].procedures[prodIndex].year = yearCount;
+							//console.log(yearCount)
+						}
+
+						// update total Growing period length to highest figure
+						if (yearCount > timePeriod) timePeriod = yearCount;
+
+						if (groupId == -1 || typeof machCombiIds[groupId][procedureId] == 'undefined' || typeof machCombiIds[groupId][procedureId][combinationId] == 'undefined' ) {
 							ids.push('notAvail')
+							//console.log(groupId, " ", procedureId);
 							return
 						}
 						else {
@@ -110,7 +132,7 @@ function gmPlot() {
 							requests.docs.push({id: idString});
 						}
 					})
-					if (subseqCrops.indexOf(crop) > -1) {
+					if (possibleCrops.indexOf(crop) > -1) {
 						plotsCropsIds.push([field,crop, ids, fieldsObject[field].size, fieldsObject[field].distance])
 					}
 					allPlotsCropsIds.push([field,crop, ids, fieldsObject[field].size, fieldsObject[field].distance])
@@ -121,9 +143,11 @@ function gmPlot() {
 			).then(function (results) {
 				var resultAll = calcGM(allPlotsCropsIds);
 				var resultSolver = calcGM(plotsCropsIds);
-
+				
 				function calcGM (input) {
 					var plotsCropsGM = {};
+					//console.log(time2);
+
 					input.forEach(function (combi) {
 						var plot = combi[0];
 						var crop = combi[1];
@@ -134,7 +158,10 @@ function gmPlot() {
 						// adjust yield to sqr in future
 						var revenue = Number(crops[crop].yield) * Number(crops[crop].price);
 						var directCosts = Number(crops[crop].variableCosts);
-						var machCosts = calcMachineCosts(ids);
+						var costsTime = calcMachineCosts(ids);
+						var machCosts = costsTime[0];
+						var timeCons = costsTime[1];
+						var timeDet = costsTime[2];
 						var variableCosts = (directCosts + machCosts + (machCosts / 12 * 3 * 0.03));
 
 						// calculate workload
@@ -160,17 +187,26 @@ function gmPlot() {
 							plotsCropsGM[plot][crop].revenue = revenue;
 							plotsCropsGM[plot][crop].variableCosts = variableCosts;
 							plotsCropsGM[plot][crop].directCosts = directCosts;
+							plotsCropsGM[plot][crop].time = timeCons;
+							plotsCropsGM[plot][crop].timeDet = timeDet;
 							//plotsCropsGM[plot][crop].size = size;
 							//plotsCropsGM[plot][crop].distance = distance;
 						}
 						function calcMachineCosts(ids) {
 							var costs = 0;
+							var time = [];
+							var time2 = [];
+							//console.log(timePeriod)
+							for (var i = 0; i <= timePeriod; i++) {
+								time.push({JAN1: 0, JAN2: 0, FEB1: 0, FEB2: 0, MRZ1: 0, MRZ2: 0, APR1: 0, APR2: 0, MAI1: 0, MAI2: 0, JUN1: 0, JUN2: 0, JUL1: 0, JUL2: 0, AUG1: 0, AUG2: 0, SEP1: 0, SEP2: 0, OKT1: 0, OKT2: 0, NOV1: 0, NOV2: 0, DEZ1: 0, DEZ2: 0 })
+								time2.push({JAN: 0, FEB: 0, MRZ: 0, APR: 0, MAI: 0, JUN: 0, JUL: 0, AUG: 0, SEP: 0, OKT: 0, NOV: 0, DEZ: 0})
+							}
 
 							ids.forEach(function (id, no) {
 								var index = requestArray.indexOf(id);
+								var month = crops[crop].procedures[no].month;
 								if (index > -1 && results.results[index].docs[0].ok) {
 									var procedure = results.results[index].docs[0].ok;
-
 									procedure.steps.forEach(function (step) {
 										// As KTBL calculates with a dieselprice of 0.7 Euro, the price was increased to 1.162,
 										// then deducted by the tax reduction of 214.8 Euro / 1000 liter -> efficte price 0.9472
@@ -182,18 +218,31 @@ function gmPlot() {
 										var lubricants = Number(step.fuelCons) * 0.9472;
 										if (lubricants == 0) lubricants = Number(step.lubricants)
 										costs += Number(step.maintenance) + lubricants;
+										// add time consumption to apropriate month
+										time[month] += step.time * Number(size);
+										//console.log(crops[crop].procedures[no].year)
+										//console.log(crops[crop].procedures[no])
+										//console.log(procedure)
+										//console.log(id)
+										//console.log(ids);
+										//console.log(crop)
+										time2[crops[crop].procedures[no].year][month.slice(0, -1)] += Number((step.time * Number(size)).toFixed(2));
 									});
 								}
 								else {
-									var procedure = crops[crop].procedures[no].steps.forEach(function (step) {
+									var procedure = crops[crop].procedures[no].steps
+									procedure.forEach(function (step) {
 										//costs += Number(step.maintenance) + Number(step.lubricants) + Number(step.services);
 										var lubricants = Number(step.fuelCons) * 0.9472;
 										if (lubricants == 0) lubricants = Number(step.lubricants)
 										costs += Number(step.maintenance) + lubricants + Number(step.services);
+										// add time consumption to apropriate month
+										time[month] += Number(step.time) * Number(size);
+										time2[crops[crop].procedures[no].year][month.slice(0, -1)] += Number((Number(step.time) * Number(size)).toFixed(2));
 									});
 								}
 							});
-							return costs;
+							return [costs, time2, time];
 						}
 					})
 					return plotsCropsGM;

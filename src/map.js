@@ -370,6 +370,8 @@ function drawCropPage() {
               var union = turf.union.apply(this, featuresArray);
               Draw.add(union)
 
+              // update field size
+              field.size = calcArea(union);
               // update DB
               field.polygon = union;
               doc[field.name] = field;

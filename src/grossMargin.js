@@ -398,7 +398,7 @@ function createCroppingPage () {
 				    tr.appendChild(th);
 				}
 				// create var. machine Cost table
-				varMechCost({
+				var workingOperations = varMechCost({
 					'tableMechBody': tableMechBody,
 					'tableMech': tableMech,
 					'tdMech': tdMech,
@@ -408,6 +408,11 @@ function createCroppingPage () {
 					'json': doc[item],
 					'name': item
 				});
+
+				// update db values
+				doc[item].operatingCosts = workingOperations[0];
+				doc[item].interestCosts = workingOperations[1];
+
 				// append table to dom
 				tableDiv.appendChild(table);
 
@@ -525,10 +530,15 @@ function createCroppingPage () {
 				               	}
 				          		else {
 				          			//console.log(docs[item][setting])
+				          			// change value in DB
 				          			docs[item][setting] = Number(number);
+				          			// update value in table
+				          			//updateGMTable(item);
 				          			//console.log(docs[item][setting])
 				          		} 
-				               		return profile.put(docs);
+				               		return profile.put(docs).then(function () {
+				               			return updateGMTable(item);
+				               		});
 				               })
 				           }
 				       };
@@ -615,10 +625,29 @@ function createCroppingPage () {
 				sidebar.appendChild(cropHeadline)
 			}
 		})
-		resolve();
+		return profile.put(doc).then(resolve);
 		}).catch (function (err) {
 			console.log(err)
 		})
 	});
   });
+}
+
+function updateGMTable(item) {
+	profile.get('crops').then(function (docs) {
+		// get Elements from DOM
+		var revenueCell = document.getElementsByClassName(item.toUpperCase())[0].rows[1].cells[3];
+		var sumRevenueCell = document.getElementsByClassName(item.toUpperCase())[0].rows[2].cells[3];
+		var operatingCostsCell = document.getElementsByClassName(item.toUpperCase())[0].rows[5].cells[3];
+		var interestCostsCell = document.getElementsByClassName(item.toUpperCase())[0].rows[document.getElementsByClassName(item.toUpperCase())[0].rows.length -3].cells[3]
+		var sumVarCosts = document.getElementsByClassName(item.toUpperCase())[0].rows[document.getElementsByClassName(item.toUpperCase())[0].rows.length -2].cells[3]
+		var grossMarginCell = document.getElementsByClassName(item.toUpperCase())[0].rows[document.getElementsByClassName(item.toUpperCase())[0].rows.length -1].cells[3];
+		// update values accordingly
+		revenueCell.innerHTML = (docs[item].price * docs[item].yield).toFixed(2);
+		sumRevenueCell.innerHTML = (docs[item].price * docs[item].yield).toFixed(2);
+		operatingCostsCell.innerHTML = (docs[item].operatingCosts).toFixed(2);
+		interestCostsCell.innerHTML = (docs[item].interestCosts).toFixed(2);
+		sumVarCosts.innerHTML = (docs[item].variableCosts + docs[item].operatingCosts + docs[item].interestCosts).toFixed(2);
+		grossMarginCell.innerHTML = (docs[item].price * docs[item].yield - docs[item].variableCosts - docs[item].operatingCosts - docs[item].interestCosts).toFixed(2);
+	})
 }

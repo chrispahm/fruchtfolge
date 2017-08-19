@@ -214,6 +214,14 @@ function varMechCost(data) {
 	// add row for gross margin
 	createRows(['Deckungsbeitrag','','', ((Number(json.price) * Number(json.yield)).toFixed(2) - (Number(json.variableCosts) + Number(sum.total.toFixed(2)) + Number(sum.total.toFixed(2)) / 12 * 3 * 0.03)).toFixed(2)])
 
+	// add variable operating costs to db - async
+	/*
+	profile.get('crops').then(function (docs) {
+		docs[item].operatingCosts = sum.total;
+		docs[item].interestCosts = (sum.total / 12 * 3 * 0.03);
+		return profile.put(docs)
+	});
+	*/
 	// append table to DOM
     //tableDiv.appendChild(table);
 
@@ -267,4 +275,5 @@ function varMechCost(data) {
 
         tableBody.appendChild(tr);
     }
+    return [sum.total, (sum.total / 12 * 3 * 0.03)];
 }

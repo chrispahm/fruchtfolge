@@ -1,7 +1,7 @@
 function createModel() {
 	return new Promise(function (resolve, reject) {
 		// recreate initial html state
-		document.getElementById('page6').innerHTML = "<div id='wrapper'> <div id='tabelle-results'></div> <div id='canvas-holder'> <canvas id='chart-area' /></div> <div id='canvas-line'> <div id='line-wrapper'> <canvas id='linechart' /> </div> </div> </div> <div id='mapResults'> <h2 style='margin-left: 40px'>KARTE</h2> <div id='crop-legend' class='legend'> <h4>Anbaukulturen</h4> </div> </div>";
+		//document.getElementById('page6').innerHTML = "<div id='wrapper'> <div id='tabelle-results'></div> <div id='canvas-holder'> <canvas id='chart-area' /></div> <div id='canvas-line'> <div id='line-wrapper'> <canvas id='linechart' /> </div> </div> </div> <div id='mapResults'> <h2 style='margin-left: 40px'>KARTE</h2> <div id='crop-legend' class='legend'> <h4>Anbaukulturen</h4> </div> </div>";
 		Promise.all([gmPlot(), profile.bulkGet({
 				docs: [
 					{id: 'fields'},
@@ -84,13 +84,11 @@ function createModel() {
           	// create basic model with all crop options per plot. Only 1 crop possible per plot
           	Object.keys(gmPlot).forEach(function (plot, indexPlot) {
           		//var abbField = 'f'+ toHex(plot).substring(0,4);
-          		if (plot == "1013") console.log(indexPlot)
           		var abbField = 'f' + indexPlot;
           		model.constraints[abbField] = {'max': 1};
           		//model.constraints[abbField] = {'min': 1};
 
           		Object.keys(gmPlot[plot]).forEach(function (crop, indexCrop) {
-          			if (plot == '1013') console.log(crop)
           			var abbCrop = 'c' + indexCrop;
           			var abbCombi = abbField + abbCrop
           			//var abbCombi = "f" + toHex(plot).substring(0,4) + 'c' + toHex(crop).substring(0,4);
@@ -127,7 +125,6 @@ function createModel() {
           			*/
           		});
           	});
-          	console.log(model)
 
           	if (noFields > 18) {
 				return Promise.all([solver.solveNEOS(model, 0, elem), 
@@ -205,8 +202,15 @@ function createModel() {
 								Promise.resolve(gmPlotAll),
 								])
 		}).then(function (res) {
+			// add object create to unsupported browsers
+			if (!Object.create)
+		    Object.create = function(proto) {
+		        function F(){}
+		        F.prototype = proto;
+		        return new F;
+		    }
+
 			var cropAlloc = res[0];
-			//console.log(cropAlloc)
 			var cropSum = res[1];
 			var shares = res[2];
 			var gmPlot = res[3];
@@ -217,6 +221,33 @@ function createModel() {
 			var crops = res[7];
 			var gmPlotAll =res[8];
 
+			// store stuff in db
+			var adjCropAlloc = goclone(cropAlloc);
+			
+			  cropSum["_id"] = 'cropSum';
+			  shares["_id"] = "shares";
+			  gmPlot["_id"] = "gmPlot";
+			  cropAlloc["_id"] = "cropAlloc";
+			  adjCropAlloc["_id"] = "adjCropAlloc";
+			  gmPlotAll["_id"] = "gmPlotAll";
+
+			var dbQuery = {docs: [{id: 'cropSum'}, {id: "shares"}, {id: "gmPlot"}, {id: "cropAlloc"}, {id: "adjCropAlloc"}, {id: "gmPlotAll"}]}; 
+			var dataArray = [cropSum, shares, gmPlot, cropAlloc, adjCropAlloc, gmPlotAll];
+
+			profile.bulkGet(dbQuery).then(function (docs) {
+				docs.results.forEach(function (doc, index) {
+					if (doc.docs[0].error) {
+						return profile.put(dataArray[index]);
+					}
+					else {
+						var data = doc.docs[0].ok
+						data = dataArray[index];
+						data._rev = doc.docs[0].ok._rev;
+						return profile.put(data);
+					}
+				});
+			});
+			
 			// time variables
 			var timePrev, timeCur;
 			var tableDiv = document.getElementById("tabelle-results");
@@ -257,7 +288,7 @@ function createModel() {
     		});
 
     		// create rows
-    		Object.keys(fields).forEach(function (plot) {
+    		Object.keys(fields).forEach(function (plot, index) {
     			if (fields[plot].size) {
 	    			var tr = document.createElement('TR');
 
@@ -268,7 +299,7 @@ function createModel() {
 	    			createTD(parseFloat(fields[plot].distance).toFixed(1), tr, 'center');
 	    			//createTD(fields[plot]['2016']);
 	    			createTD(fields[plot]['2017'], tr, 'center');
-	    			if (cropAlloc[plot]) createTD(cropAlloc[plot].crop, tr, 'center');
+	    			if (cropAlloc[plot]) createTD(cropAlloc[plot].crop, tr, 'center', 'curYear', plot, index);
 	    			else createTD('', tr, 'center')
 
 	    			tableBody.appendChild(tr);
@@ -284,17 +315,30 @@ function createModel() {
     			var gm = 0;
     			var time = [];
 				timePrev = [];
+				// save time to db
+				profile.get('timePrev').then(function (doc) {
+					doc.time = timePrev;
+					return profile.put(doc);
+				}).catch(function (error) {
+					if (error.name === "not found") {
+						return profile.put({_id: "timePrev", time: timePrev});
+					}
+					else { 
+						return console.log(error);
+					}
+				});
+
 				//console.log(timePeriod)
 				for (var i = 0; i <= 1; i++) {
 					time.push({JAN1: 0, JAN2: 0, FEB1: 0, FEB2: 0, MRZ1: 0, MRZ2: 0, APR1: 0, APR2: 0, MAI1: 0, MAI2: 0, JUN1: 0, JUN2: 0, JUL1: 0, JUL2: 0, AUG1: 0, AUG2: 0, SEP1: 0, SEP2: 0, OKT1: 0, OKT2: 0, NOV1: 0, NOV2: 0, DEZ1: 0, DEZ2: 0 })
 					timePrev.push({JAN: 0, FEB: 0, MRZ: 0, APR: 0, MAI: 0, JUN: 0, JUL: 0, AUG: 0, SEP: 0, OKT: 0, NOV: 0, DEZ: 0})
 				}
     			Object.keys(fields).forEach(function (plot) {
-    				if (fields[plot]['2016'] && crops[fields[plot]['2016']]) {
+    				if (fields[plot]['2017'] && crops[fields[plot]['2017']]) {
     					// add field gross margin to total gross margin
-    					gm += gmPlotAll[plot][fields[plot]['2016']].gmTot;
+    					gm += gmPlotAll[plot][fields[plot]['2017']].gmTot;
     					// add time to total time
-    					gmPlotAll[plot][fields[plot]['2016']].time.forEach(function (obj, yrIndex) {
+    					gmPlotAll[plot][fields[plot]['2017']].time.forEach(function (obj, yrIndex) {
     						Object.keys(obj).forEach(function (key) {
     							timePrev[yrIndex][key] += Number(obj[key].toFixed(2));
     						});
@@ -314,8 +358,21 @@ function createModel() {
 					time.push({JAN1: 0, JAN2: 0, FEB1: 0, FEB2: 0, MRZ1: 0, MRZ2: 0, APR1: 0, APR2: 0, MAI1: 0, MAI2: 0, JUN1: 0, JUN2: 0, JUL1: 0, JUL2: 0, AUG1: 0, AUG2: 0, SEP1: 0, SEP2: 0, OKT1: 0, OKT2: 0, NOV1: 0, NOV2: 0, DEZ1: 0, DEZ2: 0 })
 					timeCur.push({JAN: 0, FEB: 0, MRZ: 0, APR: 0, MAI: 0, JUN: 0, JUL: 0, AUG: 0, SEP: 0, OKT: 0, NOV: 0, DEZ: 0})
 				}
+				// save time to db
+				profile.get('timeCur').then(function (doc) {
+					doc.time = timeCur;
+					return profile.put(doc);
+				}).catch(function (error) {
+					if (error.name === "not found") {
+						return profile.put({_id: "timeCur", time: timeCur});
+					}
+					else { 
+						return console.log(error);
+					}
+				});
+
     			Object.keys(fields).forEach(function (plot) {
-    				if (cropAlloc[plot]) {
+    				if (cropAlloc[plot] && plot !== "_id" && plot !== "_rev") {
     					gm += cropAlloc[plot][cropAlloc[plot].crop];
     					// add time to total time
     					gmPlotAll[plot][cropAlloc[plot].crop].time.forEach(function (obj, yrIndex) {
@@ -326,6 +383,20 @@ function createModel() {
     				}
     			});
     			//console.log(time2)
+    			// store gm in db
+    			profile.get('optimum').then(function (doc) {
+					doc.value = gm;
+					doc.cur = gm
+					return profile.put(doc);
+				}).catch(function (error) {
+					if (error.name === "not found") {
+						return profile.put({_id: "optimum", value: gm, cur: gm});
+					}
+					else { 
+						return console.log(error);
+					}
+				});
+
     			return gm.toFixed(1);
     		})(), trSum, 'center');
 
@@ -350,10 +421,36 @@ function createModel() {
 						 profile.get('info'),
 						 Promise.resolve(cropColor)]);
 
-		    function createTD (input, tr, align) {
-    				if (!input) var input = ''
+		    function createTD (input, tr, align, curYear, plot, index) {
+    				if (!input) var input = '';
     				var td = document.createElement('TD');
-		            td.appendChild(document.createTextNode(input));
+    				// create select element in case of crops, so user may change crops per plot
+    				if (Object.keys(crops).indexOf(input) > -1 && curYear) {
+    					var select = document.createElement('select');
+    					var backgroundColor = (function () {
+    						if (isEven(index)) return '#ECECEC';
+    						else return '#F5F5F5';
+    					})()
+    					select.classList.toggle('monthDropDown');
+    					select.id = plot;
+    					select.style.fontSize = '16px';
+    					select.style.background = backgroundColor;
+    					 select.onchange = function (e) {
+    						updateResults(plot, e.target.value);
+    					};
+
+    					Object.keys(crops).forEach(function (crop) {
+    						if (crop == "_rev" || crop == "_id") return;
+    						var option = document.createElement('option');
+    						option.innerHTML = crop;
+    						if (crop == input) option.selected = 'selected';
+    						return select.appendChild(option)
+    					});
+    					td.appendChild(select);
+    				}
+    				else {
+    					td.appendChild(document.createTextNode(input));
+    				}
 		            td.style.display = 'inline-block';
 		            td.style.wordBreak = 'break-word';
 		            if (align) td.style.textAlign = align;
@@ -370,7 +467,7 @@ function createModel() {
 			var language = 'de'
 			mapboxgl.accessToken = 'pk.eyJ1IjoidG9mZmkiLCJhIjoiY2l3cXRnNHplMDAxcTJ6cWY1YWp5djBtOSJ9.mBYmcCSgNdaRJ1qoHW5KSQ';
 
-			var map = new mapboxgl.Map({
+			window.mapResults = new mapboxgl.Map({
 			    container: 'mapResults',
 			    //style: 'mapbox://styles/mapbox/satellite-streets-v9?optimize=true',
 			    // mapbox://styles/toffi/cj5gxt7ug3o542rph58zh8v40
@@ -381,13 +478,14 @@ function createModel() {
 			    //dragPan: false,
 			    dragRotate: false
 			});
-			map.addControl(new mapboxgl.NavigationControl(), 'bottom-left');
+			mapResults.addControl(new mapboxgl.NavigationControl(), 'bottom-left');
 			//console.log(cropColor)
 			// ields[plot].name || p
-			map.on('load', function () {
+			mapResults.on('load', function () {
 				var featureCollection = [];
 
 				Object.keys(cropAlloc).forEach(function (plot) {
+					if (plot === "_id" || plot === "_rev") return;
 					var feature = fields[plot].polygon;
 					feature.crop = cropAlloc[plot].crop;
 					feature.properties = {
@@ -405,12 +503,12 @@ function createModel() {
 			            	"features": featureCollection
 			    		}
 			    };
-				map.addSource("plots", collectionObject);
+				mapResults.addSource("plots", collectionObject);
 
 			    Object.keys(cropColor).forEach(function	(crop,index) {
 
 			    	// add layer filling the inside of each plot per crop
-			    	map.addLayer({
+			    	mapResults.addLayer({
 				        "id": crop,
 				        "type": "fill",
 				        "source": "plots",
@@ -422,7 +520,7 @@ function createModel() {
 				    });
 
 			    	// add layer filling the outline of each plot per crop
-				    map.addLayer({
+				    mapResults.addLayer({
 				        "id": index.toFixed(0),
 				        "type": "line",
 				        "source": "plots",
@@ -448,9 +546,9 @@ function createModel() {
 				        closeOnClick: false
 				    });
 
-				    map.on('mouseenter', crop, function(e) {
+				    mapResults.on('mouseenter', crop, function(e) {
 				        // Change the cursor style as a UI indicator.
-				        map.getCanvas().style.cursor = 'pointer';
+				        mapResults.getCanvas().style.cursor = 'pointer';
 
 				        // Populate the popup and set its coordinates
 				        // based on the feature found.
@@ -458,20 +556,44 @@ function createModel() {
 				        //console.log(e.features[0])
 				        popup.setLngLat(center)
 				            .setHTML(e.features[0].properties.description)
-				            .addTo(map);
+				            .addTo(mapResults);
 				    });
 
-				    map.on('mouseleave', crop, function() {
-				        map.getCanvas().style.cursor = '';
+				    mapResults.on('mouseleave', crop, function() {
+				        mapResults.getCanvas().style.cursor = '';
 				        popup.remove();
 				    });
 			    });
 			    //var center = turf.bbox(collectionObject.data)
-			    //map.fitBounds(center, {animate: false, padding: {top: 10, bottom:25, left: 15, right: 5}});
+			    //mapResults.fitBounds(center, {animate: false, padding: {top: 10, bottom:25, left: 15, right: 5}});
 				// map loaded
 				resolve();
 			})
 			
 		}).catch(console.log.bind(console));
 	})
+}
+
+function goclone(source) {
+    if (Object.prototype.toString.call(source) === '[object Array]') {
+        var clone = [];
+        for (var i=0; i<source.length; i++) {
+            clone[i] = goclone(source[i]);
+        }
+        return clone;
+    } else if (typeof(source)=="object") {
+        var clone = {};
+        for (var prop in source) {
+            if (source.hasOwnProperty(prop)) {
+                clone[prop] = goclone(source[prop]);
+            }
+        }
+        return clone;
+    } else {
+        return source;
+    }
+}
+
+function isEven(n) {
+   return n % 2 == 0;
 }

@@ -64,7 +64,6 @@ function gmPlot() {
 						possibleCrops.push(option)
 					}
 				});
-				if (field == '1013') console.log(possibleCrops);
 				var size = getValue(fieldsObject[field].size, [1,2,5,10,20,40,80]);
 				var distance = getValue(fieldsObject[field].distance, [1,2,3,4,5,6,10,15,20,30]);
 				var resistance = soilTypes[fieldsObject[field].soilType];
@@ -208,7 +207,7 @@ function gmPlot() {
 								if (index > -1 && results.results[index].docs[0].ok) {
 									var procedure = results.results[index].docs[0].ok;
 									procedure.steps.forEach(function (step) {
-										// As KTBL calculates with a dieselprice of 0.7 Euro, the price was increased to 1.162,
+										// As KTBL calculates with a diesel price of 0.7 Euro, the price was increased to 1.162,
 										// then deducted by the tax reduction of 214.8 Euro / 1000 liter -> efficte price 0.9472
 										// source ADAC dieselprice
 										// https://www.adac.de/infotestrat/tanken-kraftstoffe-und-antrieb/kraftstoffpreise/kraftstoff-durchschnittspreise/default.aspx

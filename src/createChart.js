@@ -8,10 +8,11 @@ function createChart(cropSum) {
 	
 	var colors = ["#294D4A", "#4A6D7C", "#7690A5", "#79ae98", "#BBE29D", "#9DD5C0", '#B5DCE1', "#D0D1D3", "#B5DCE1"]
 	Object.keys(cropSum).forEach(function (crop) {
+    if (crop == "_rev" || crop == "_id") return
 		dataUnsorted.push([parseFloat(cropSum[crop].toFixed(1)), crop]);
 	});
 	var sorted = dataUnsorted.sort(Comparator);
-	var cropColor = {};
+	window.cropColor = {};
 
 	sorted.forEach(function (item, index) {
 		data.push(item[0]);
@@ -54,13 +55,13 @@ function createChart(cropSum) {
     };
 
 	var ctx = document.getElementById("chart-area").getContext("2d");
-    window.myPie = new Chart(ctx, config);
+    window.cropSharesPie = new Chart(ctx, config);
 
-    return cropColor;
-
-	function Comparator(a, b) {
-	   if (a[0] < b[0]) return 1;
-	   if (a[0] > b[0]) return -1;
-	   return 0;
-	 }
+    return window.cropColor;
 }
+
+function Comparator(a, b) {
+   if (a[0] < b[0]) return 1;
+   if (a[0] > b[0]) return -1;
+   return 0;
+ }

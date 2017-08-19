@@ -53,5 +53,5 @@ function addLineChart (timePrev, timeCur) {
             
 
     var ctx = document.getElementById("linechart").getContext("2d");
-    return new Chart(ctx, configLine);   
+    return window.timeLineChart = new Chart(ctx, configLine);   
 }

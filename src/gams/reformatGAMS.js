@@ -211,7 +211,6 @@
 	    GAMSinput = GAMSinput.replace(/Ü/, "Ue");
 	    GAMSinput = GAMSinput.replace(/Ö/, "Oe");
 	    GAMSinput = GAMSinput.replace(/Ä/, "Ae");
-
 	    return GAMSinput;
 
 	}

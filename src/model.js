@@ -1,7 +1,7 @@
 function createModel() {
 	return new Promise(function (resolve, reject) {
 		// recreate initial html state
-		//document.getElementById('page6').innerHTML = "<div id='wrapper'> <div id='tabelle-results'></div> <div id='canvas-holder'> <canvas id='chart-area' /></div> <div id='canvas-line'> <div id='line-wrapper'> <canvas id='linechart' /> </div> </div> </div> <div id='mapResults'> <h2 style='margin-left: 40px'>KARTE</h2> <div id='crop-legend' class='legend'> <h4>Anbaukulturen</h4> </div> </div>";
+		document.getElementById('page6').innerHTML = "  <div id='wrapper'> <div id='tabelle-results'></div> <div id='canvas-holder'> <canvas id='chart-area' /></div> <div id='alerts-box'></div> <div id='canvas-line'> <div id='line-wrapper'> <canvas id='linechart' /> </div> </div> </div> <div id='mapResults'> <h2 style='margin-left: 40px'>KARTE</h2> <div id='crop-legend' class='legend'> <h4>Anbaukulturen</h4> </div> </div>"
 		Promise.all([gmPlot(), profile.bulkGet({
 				docs: [
 					{id: 'fields'},
@@ -85,7 +85,7 @@ function createModel() {
           	Object.keys(gmPlot).forEach(function (plot, indexPlot) {
           		//var abbField = 'f'+ toHex(plot).substring(0,4);
           		var abbField = 'f' + indexPlot;
-          		model.constraints[abbField] = {'max': 1};
+          		model.constraints[abbField] = {'max': 1, 'min': 1};
           		//model.constraints[abbField] = {'min': 1};
 
           		Object.keys(gmPlot[plot]).forEach(function (crop, indexCrop) {
@@ -220,7 +220,6 @@ function createModel() {
 			var fields = res[6];
 			var crops = res[7];
 			var gmPlotAll =res[8];
-
 			// store stuff in db
 			var adjCropAlloc = goclone(cropAlloc);
 			
@@ -301,6 +300,7 @@ function createModel() {
 	    			createTD(fields[plot]['2017'], tr, 'center');
 	    			if (cropAlloc[plot]) createTD(cropAlloc[plot].crop, tr, 'center', 'curYear', plot, index);
 	    			else createTD('', tr, 'center')
+	    			// else createTD('fields[plot]['2017']', tr, 'center', 'curYear', plot, index)
 
 	    			tableBody.appendChild(tr);
     			}
@@ -320,7 +320,7 @@ function createModel() {
 					doc.time = timePrev;
 					return profile.put(doc);
 				}).catch(function (error) {
-					if (error.name === "not found") {
+					if (error.name === "not_found") {
 						return profile.put({_id: "timePrev", time: timePrev});
 					}
 					else { 
@@ -363,7 +363,7 @@ function createModel() {
 					doc.time = timeCur;
 					return profile.put(doc);
 				}).catch(function (error) {
-					if (error.name === "not found") {
+					if (error.name === "not_found") {
 						return profile.put({_id: "timeCur", time: timeCur});
 					}
 					else { 
@@ -381,6 +381,16 @@ function createModel() {
     						});
     					});
     				}
+    				/*
+    				else if (Object.keys(crops).indexOf(fields[plot]['2017']) > -1){
+    					gm += gmPlotAll[plot][fields[plot]['2017']].gmTot;
+    					gmPlotAll[plot][fields[plot]['2017']].time.forEach(function (obj, yrIndex) {
+    						Object.keys(obj).forEach(function (key) {
+    							timeCur[yrIndex][key] += Number(obj[key].toFixed(2));
+    						});
+    					});
+    				}
+    				*/
     			});
     			//console.log(time2)
     			// store gm in db
@@ -389,7 +399,7 @@ function createModel() {
 					doc.cur = gm
 					return profile.put(doc);
 				}).catch(function (error) {
-					if (error.name === "not found") {
+					if (error.name === "not_found") {
 						return profile.put({_id: "optimum", value: gm, cur: gm});
 					}
 					else { 
@@ -415,13 +425,15 @@ function createModel() {
 			        cells[j].style.width = breite - 2 + "px";
 			    }
 		    }
+		    // set width of tbody container equal to width of thead (for firefox)
+		    document.getElementsByClassName('resultsTableBody')[0].style.width = (document.getElementsByClassName('resultsTableHead')[0].offsetWidth + 17) + "px";
 
 		    return Promise.all([Promise.resolve(cropAlloc), 
 						 Promise.resolve(fields),
 						 profile.get('info'),
 						 Promise.resolve(cropColor)]);
 
-		    function createTD (input, tr, align, curYear, plot, index) {
+		    function createTD (input, tr, align, curYear, plot, index, none) {
     				if (!input) var input = '';
     				var td = document.createElement('TD');
     				// create select element in case of crops, so user may change crops per plot

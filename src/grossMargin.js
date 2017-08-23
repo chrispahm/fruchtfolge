@@ -88,13 +88,15 @@ function createCroppingPage () {
 		var recommendations = value.a.results[1].docs[0].ok
 		var cropToKTBL = value.a.results[2].docs[0].ok
 
+		var cropName = [];
 		var requests = {docs: []};
 		crops.forEach(function (crop) {
 			var KTBLname = cropToKTBL[crop];
 			if (typeof KTBLname !== 'undefined') {
 				var id = cropObject[KTBLname].name + '/' + cropObject[KTBLname].tillage[0]
 								   + '/' + cropObject[KTBLname].yield[0];
-				requests.docs.push({id: id})
+				requests.docs.push({id: id});
+				cropName.push(crop)
 			}
 		});
 
@@ -104,8 +106,11 @@ function createCroppingPage () {
 
 			return db.bulkGet(requests).then(function (docs) {
 				docs.results.forEach(function (resultObject, index) {
+					//console.log(resultObject)
 					var result = resultObject.docs[0].ok;
-					var crop = searchValueinObject(cropToKTBL,result['_id'].split('/')[0]);
+					//var crop = searchValueinObject(cropToKTBL,result['_id'].split('/')[0]);
+					//console.log(crop)
+					var crop = cropName[index];
 					var cropDB = {};
 					var specification = result.specification;
 
@@ -453,7 +458,6 @@ function createCroppingPage () {
 					var label = document.createElement('label')
 					label.htmlFor = 'subseqCrop/' + subseqCrop;
 					label.appendChild(document.createTextNode(subseqCrop));
-
 			    	if (doc[item].subseqCrops.indexOf(subseqCrop) > -1) {
 			    		//console.log('hier')
 			    		checkbox.checked = true;

@@ -40,8 +40,11 @@ function updateResults (plot, crop) {
 				// assess whether an adjustment to the totla GM has been made, or optimum value should be used
 				var curGM = optimum.cur;
 
+				var oldCrop;
+				if (!adjCropAlloc[plot]) oldCrop = gmPlotAll[plot][fields[plot]['2017']].gmTot;
+				else oldCrop = adjCropAlloc[plot][adjCropAlloc[plot].crop]
 				// create new total GM value -> deduct "old" crops gross margin from total gm and add "new" crops gm
- 				var newGMValue = curGM - adjCropAlloc[plot][adjCropAlloc[plot].crop] + gmPlotAll[plot][crop].gmTot;
+ 				var newGMValue = curGM - oldCrop + gmPlotAll[plot][crop].gmTot;
 
  				// update current gross margin
  				optimum.cur = newGMValue;
@@ -273,7 +276,7 @@ function updateResults (plot, crop) {
 					var rootCrop = crops[curCrop].rootCrop;
 
 					// check if crop was grown inside rotational break period
-					if (previousCrops.slice(0, rotBreak -1).indexOf(curCrop) > -1) {
+					if (rotBreak > 0 && previousCrops.slice(0, rotBreak -1).indexOf(curCrop) > -1) {
 						var constViol = document.createElement("p");
 						constViol.style.margin = "auto";
  						constViol.innerHTML = "Anbaupause für " + curCrop + " auf dem Feld '" + fields[field].name + "' nicht eingehalten";

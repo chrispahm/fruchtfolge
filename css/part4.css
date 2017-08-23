@@ -252,7 +252,7 @@ body {
 	    height: auto;
 	}
 	.resultsTableBody {
-	    display: block;
+	  display: block;
 		height: calc(100vh - 170px);
 		overflow: auto;
 	}

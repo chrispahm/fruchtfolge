@@ -48,7 +48,7 @@ function gmPlot() {
 					var rootCrop = crops[option].rootCrop;
 
 					// check if crop option was grown inside rotational break period
-					if (previousCrops.slice(0, rotBreak -1).indexOf(option) > -1) {
+					if (rotBreak > 0 && previousCrops.slice(0, rotBreak -1).indexOf(option) > -1) {
 						return;
 					}
 					// check if soil quality is sufficient

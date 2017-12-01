@@ -12,7 +12,7 @@ a) reducing the effort needed in order to acquire adequate farm planning data
 b) providing a sufficient adaptation towards the individual farm endowments within a short amount of time.
 
 The overall goal is to create an individual, optimised crop production plan within less than 10 minutes.
-A research paper discussing the methodology can be found [here](https://uni-bonn.sciebo.de/index.php/s/KWJxsusii8KRUAP).
+A research paper discussing the methodology can be found [here](https://uni-bonn.sciebo.de/index.php/s/99SIXQb6lsNZ0Es).
 
 ## Features
 

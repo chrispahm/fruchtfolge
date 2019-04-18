@@ -1,3 +1,7 @@
+# MOVED - THIS REPOSITORY IS DEPRECATED
+Development of this project continues at [https://github.com/fruchtfolge/client](https://github.com/fruchtfolge/client)
+
+
 # Fruchtfolge
 
 Fruchtfolge (german for crop rotation) is a web app project aimed at identifying optimal crop production plans for farmers, maximising their potential income. It is currently under development.
